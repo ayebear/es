@@ -6,6 +6,12 @@
 namespace es
 {
 
+bool loadPrototypes(ocs::ObjectManager& objects, const std::string& configFilename)
+{
+    EntityPrototypeLoader loader(objects, configFilename);
+    return loader.load();
+}
+
 EntityPrototypeLoader::EntityPrototypeLoader(ocs::ObjectManager& objects, const std::string& configFilename):
     objects(objects),
     config(configFilename)
@@ -24,13 +30,6 @@ bool EntityPrototypeLoader::load()
     return status;
 }
 
-bool EntityPrototypeLoader::load(ocs::ObjectManager& objects, const std::string& configFilename)
-{
-    // Create an instance of this class inside of this function, because it needs to hold state
-    EntityPrototypeLoader loader(objects, configFilename);
-    return loader.load();
-}
-
 void EntityPrototypeLoader::extractParentInfo()
 {
     for (auto& section: config)
@@ -40,8 +39,8 @@ void EntityPrototypeLoader::extractParentInfo()
         auto parentEntities = splitNames(section.first, entityName);
 
         // Store parent list and copy original component data
-        entToComp[entityName].parentNames.swap(parentEntities);
-        entToComp[entityName].componentData.swap(section.second);
+        entToComp[entityName].parentNames = std::move(parentEntities);
+        entToComp[entityName].componentData = std::move(section.second);
     }
 }
 
@@ -64,14 +63,14 @@ std::vector<std::string> EntityPrototypeLoader::splitNames(const std::string& se
         entityName = outerSplit.front();
 
     // Split and trim parent names (if there are any parents)
+    std::vector<std::string> parentEntities;
     if (outerSplit.size() == 2)
     {
-        auto parentEntities = strlib::split(outerSplit.back(), ",");
+        parentEntities = strlib::split(outerSplit.back(), ",");
         for (auto& parentName: parentEntities)
             strlib::trimWhitespace(parentName);
-        return parentEntities;
     }
-    return {};
+    return parentEntities;
 }
 
 void EntityPrototypeLoader::loadEntity(const std::string& entityName, const std::string& parentName)
@@ -85,7 +84,6 @@ void EntityPrototypeLoader::loadEntity(const std::string& entityName, const std:
 
     // Mark this entity name as visited
     visitedParents.insert(parentName);
-    //std::cout << "  Visited '" << parentName << "'\n";
 
     // Loop through any parents, and call this function
     for (auto& parent: entToComp[parentName].parentNames)
@@ -93,13 +91,10 @@ void EntityPrototypeLoader::loadEntity(const std::string& entityName, const std:
         // Make sure parents are never re-visited before recursing
         if (visitedParents.find(parent) == visitedParents.end())
             loadEntity(entityName, parent);
-        //else
-            //std::cout << "  Skipping '" << parent << "', already visited.\n";
     }
 
     // Load the components of this entity or parent
     loadComponents(entityName, entToComp[parentName].componentData);
-    //std::cout << "  Loaded components from '" << parentName << "'\n";
 }
 
 void EntityPrototypeLoader::loadComponents(const std::string& entityName, const cfg::File::Section& section)

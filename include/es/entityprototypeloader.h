@@ -11,6 +11,9 @@
 namespace es
 {
 
+// Loads all prototypes from a config file (returns true if successful)
+bool loadPrototypes(ocs::ObjectManager& objects, const std::string& configFilename);
+
 /*
 This is an alternate version of the ObjectPrototypeLoader class from OCS.
 It uses cfg::File formatted files instead, to keep things consistent with the rest of the project.
@@ -22,7 +25,7 @@ Inheritance:
     Multiple inheritance is supported.
         The order the parents are listed is the order they are loaded.
 
-Sample format:
+Example file:
 
 [SomeEntity]
 Position = "200 200"
@@ -39,15 +42,16 @@ Description = "An entity with all of the components of SomeEntity and AnotherEnt
 [SubEntity2: SomeEntity]
 Size = "64 64"
 
+Example usage:
+
+es::loadPrototypes("entities.cfg");
+
 */
 class EntityPrototypeLoader
 {
     public:
         EntityPrototypeLoader(ocs::ObjectManager& objects, const std::string& configFilename);
         bool load();
-
-        // Loads all prototypes from a config file (returns true if successful)
-        static bool load(ocs::ObjectManager& objects, const std::string& configFilename);
 
     private:
 
