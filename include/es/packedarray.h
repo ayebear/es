@@ -115,22 +115,22 @@ class PackedArray
             return elements.size();
         }
 
-        typename std::vector<Type>::iterator begin()
+        typename Container::iterator begin()
         {
             return elements.begin();
         }
 
-        typename std::vector<Type>::iterator end()
+        typename Container::iterator end()
         {
             return elements.end();
         }
 
-        typename std::vector<Type>::const_iterator cbegin() const
+        typename Container::const_iterator cbegin() const
         {
             return elements.cbegin();
         }
 
-        typename std::vector<Type>::const_iterator cend() const
+        typename Container::const_iterator cend() const
         {
             return elements.cend();
         }
