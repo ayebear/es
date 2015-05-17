@@ -55,44 +55,6 @@ No other entity system currently has **all** of these features:
   * **User defined:** You can create a file containing the prototype definitions.
 
 
-## Prototypes
-
-Prototypes can be defined in the [ConfigFile](https://github.com/ayebear/ConfigFile) format, and loaded from various sources such as a file, string, or a network.
-
-* Component names must be properly defined/bound first.
-* Prototypes and their names are static, so they don't need to be reloaded across worlds.
-* Multiple inheritance is fully supported.
-  * Loops and the diamond problem are solved by ignoring entity names already loaded into each entity.
-  * As the same components are encountered, they are overridden with the latest components.
-
-#### Example prototypes file:
-
-Filename: "entities.cfg"
-
-```dosini
-[Example]
-Component = "parameter1 parameter2 parameter3"
-ComponentFlag = ""
-
-[SomeEntity]
-Position = "200 200"
-Velocity = "50 50"
-Size = "128 128"
-
-[SubEntity: SomeEntity, Example]
-Description = "An entity with all of the components of SomeEntity and Example"
-
-[SubEntity2: SomeEntity]
-Size = "64 64"
-```
-
-#### Code to load the prototypes file:
-
-```cpp
-es::loadPrototypes("entities.cfg");
-```
-
-
 ## Example Usage
 
 Note: Some of these features aren't fully designed/implemented yet, and may change in the future.
@@ -202,6 +164,7 @@ After this, the entity is no longer valid and should not be used.
 
 ##### Define components:
 
+```cpp
 esComponent(Position)
 {
     float x {0.0f};
@@ -219,6 +182,7 @@ esComponent(Position)
         return es::cat(x, y);
     }
 };
+```
 
 ##### Bind/register component names to types:
 
@@ -238,12 +202,15 @@ By default, accessing components will return a special es::ComponentHandle objec
 Access components (will be created if they don't exist):
 
 ```cpp
-auto baseComp = ent["Component"];
-auto baseComp2 = ent.at("Component");
+// The regular way
 auto comp = ent.at<Component>();
 
+// These return base component handles, since the type is not known
+auto baseComp = ent["Component"];
+auto baseComp2 = ent.at("Component");
+
 // Can chain calls
-auto comp = world["someEntity"]["Component"];
+auto baseComp3 = world["someEntity"]["Component"];
 ```
 
 Access components (won't create):
@@ -312,13 +279,180 @@ ent["Position"] >> posStr;
 auto comps = ent.serialize(); // Returns a vector of strings
 ```
 
+
 ### Systems
 
-TODO: Explain es::System and es::SystemContainer
+#### es::System
+
+A simple base class with initialize() and update() methods. This is used by the SystemContainer class.
+
+##### Example user-defined system:
+
+```cpp
+#include "es/system.h"
+
+class MovementSystem: public es::System
+{
+public:
+    MovementSystem(es::World& world): world(world) {}
+
+    void update(float dt)
+    {
+        for (auto& ent: world)
+        {
+            auto pos = ent.get<Position>();
+            auto vel = ent.get<Velocity>();
+            if (pos && vel)
+            {
+                pos->x += vel->x * dt;
+                pos->y += vel->y * dt;
+            }
+        }
+    }
+
+private:
+    es::World& world;
+};
+```
+
+#### es::SystemContainer
+
+This class stores instances of es::System classes, and can call initialize/update on all/any of them. Both initializeAll() and updateAll() will call the methods in the order the systems were added.
+
+##### Add systems to a container
+
+```cpp
+SystemContainer systems;
+systems.add<MovementSystem>(world);
+systems.add<RenderSystem>(world, window);
+```
+
+##### Initialize and update the systems
+
+```cpp
+// Call this before your program starts
+systems.initializeAll();
+
+// Call this in a loop
+systems.updateAll(dt);
+
+// Also supports updating single systems by type:
+systems.update<MovementSystem>(dt);
+```
 
 ### Events
 
-TODO: Explain es::Events
+Events are used to allow systems to communicate without depending on each other. The event system provided is completely optional, you may use your own if you wish.
+
+#### es::Events
+
+This is a simple class that provides static functions for sending global events, separated by type.
+
+Internal storage: The events are directly stored in a deque for each type, which should be faster than vector for this use case. Deque's do not reallocate when more space is needed, which speeds up sending events. Even though deque is less cache-efficient than vector, the difference will be negligible, since normally only one piece of code will iterate through the events on the receiving end, before it gets cleared.
+
+##### Defining events
+
+Any type can be used as an event. Example:
+
+```cpp
+struct MyEvent
+{
+    std::string text;
+    int number;
+};
+```
+
+##### Sending events
+
+Events are sent to the queue of that particular type:
+
+```cpp
+// C++11 brace-init style (does not require a constructor)
+es::Events::send(MyEvent{"Some text", 20});
+
+// Emplace the event (requires a parameterized constructor)
+es::Events::send<MyEvent>("Some text", 20);
+
+// Send an existing event
+MyEvent event;
+...
+es::Events::send(event);
+```
+
+##### Receiving events
+
+The safest and most efficient way to receive events is to iterate through them:
+
+```cpp
+for (auto& event: es::Events::get<MyEvent>())
+    doSomethingWithEvent(event);
+```
+
+##### Clearing events
+
+The events still exist in memory even after iterating through them. This is so multiple systems can access the same events. Because of this, you must clear the events each loop, so events aren't processed more than once.
+
+To clear all of the events:
+
+```cpp
+es::Events::clearAll();
+```
+
+It seems simple to just call this in your main loop, but what if your systems aren't in the correct order? You'll have events that are never received, because they will be cleared before anything receives them. Here are some solutions:
+  * Re-order your systems so all events are received properly (isn't always easy or possible)
+  * Run multiple passes for updating things (this has a lot of issues)
+  * Manually clear event types (tedious, but works the best)
+
+To clear specific event types:
+
+```cpp
+es::Events::clear<MyEvent>();
+```
+
+This will clear all of the events of type "MyEvent". Here are some tips on where to call this in your code:
+
+* One sender, multiple receivers:
+  * Call clear right **before** the events are **sent**. This way, even if a system is a frame behind, the event will still be received.
+* Multiple senders, one receiver:
+  * Call clear right **after** all of the events of that type have been **received**.
+
+
+### Prototypes
+
+Prototypes can be defined in the [ConfigFile](https://github.com/ayebear/ConfigFile) format, and loaded from various sources such as a file, string, or a network.
+
+* Component names must be properly defined/bound first.
+* Prototypes and their names are static, so they don't need to be reloaded across worlds.
+* Multiple inheritance is fully supported.
+  * Loops and the diamond problem are solved by ignoring entity names already loaded into each entity.
+  * As the same components are encountered, they are overridden with the latest components.
+
+##### Example prototypes file:
+
+Filename: "entities.cfg"
+
+```dosini
+[Example]
+Component = "parameter1 parameter2 parameter3"
+ComponentFlag = ""
+
+[SomeEntity]
+Position = "200 200"
+Velocity = "50 50"
+Size = "128 128"
+
+[SubEntity: SomeEntity, Example]
+Description = "An entity with all of the components of SomeEntity and Example"
+
+[SubEntity2: SomeEntity]
+Size = "64 64"
+```
+
+##### Code to load the prototypes file:
+
+```cpp
+es::loadPrototypes("entities.cfg");
+```
 
 
 ## Author
