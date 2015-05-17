@@ -4,148 +4,101 @@
 #ifndef PACKEDARRAY_H
 #define PACKEDARRAY_H
 
+#include <cstdint>
 #include <vector>
-#include <utility>
-#include <ctype>
+#include <limits>
+#include "reversemap.h"
 
 namespace es
 {
 
 /*
-TODO:
-    Unit tests for every possible scenario, including failing ones
-    Implement free list as part of the holes in the outer index
-    Consider using an unordered_map for the index
-        IDs shouldn't be reused if possible as well
+PackedArray 2.0
+    100% unique IDs, never reused (until overflow)
+        Just increments the ID each time something new is added
+    Generic "handles", which are smart pointers that don't invalidate when reallocating memory
+        The lookup is done when using the handle
+        The handle stores the ID instead of a raw pointer
+    O(1): Add, access, remove
+    Supports directly iterating through internal array
 */
-
-/*
-This class manages an array of objects in an efficient way, with good cache efficiency and minimal memory allocations.
-Adding, removing, and accessing objects are all O(1) operations.
-    Note: Except when more space needs to be allocated, which is O(n)
-The internal order of the objects can rearrange when removing objects to keep everything contiguous.
-The external IDs which are returned by the create function are guaranteed not to change unless
-    erase is called with that ID, or if clear is called.
-
-Here are some visual examples of how the packed array works.
-Note that the outer array and free list are managed by the Index class.
-
-Example packed array object:
-            0   1   2   3   4   (this is how everything outside can access/erase elements)
-Outer    : [ ] [2] [ ] [0] [1]  (array of ints, can have "holes" which are actually -1)
-Free list: {0, 2}               (deque of ints, contains all of the free IDs)
-Reverse  : [3] [4] [1]          (array of ints, parallel to the inner array)
-Inner    : [x] [y] [z]          (array of the templated type, no "holes", this should be iterated through)
-
-Accessing packedArray[1] would return z, packedArray[3] would return x, packedArray[4] would return y.
-Accessing packedArray[0] or packedArray[2] would be undefined behavior as they are invalid IDs.
-
-After erase(3):
-Outer    : [ ] [0] [ ] [ ] [1]  // 3rd element gets set to -1
-Free list: {0, 2, 3}            // 3 gets added to the free list
-Reverse  : [1] [4]              // 0th element gets replaced with 2nd element
-Inner    : [z] [y]              // 0th element gets replaced with 2nd element
-
-After create(a):
-Outer    : [2] [0] [ ] [ ] [1]  // 0th element gets internal ID set to 2
-Free list: {2, 3}               // 0 gets removed from free list
-Reverse  : [1] [4] [0]          // 0 gets added to reverse lookup table
-Inner    : [z] [y] [a]          // a gets added to inner array
-
-Client-server synchronization:
-Server:
-{0, 1, 2, 3, 4, 5, 6, 7, 8, 9} // Index
-{a, b, c, d, e, f, g, h, i, j} // Internal objects
-Client: (only is near a few)
-{_, _, 0, 1, 2, _, 3, _, _, _} // Index
-{c, d, e, g}                   // Internal objects
-Note how the external IDs stay the same, without having to use yet another layer of indirection.
-Also, the internal array is still packed, allowing for good cache efficiency.
-
-Example usage:
-PackedArray<string> names;
-ID bobId = names.create("Bob");
-cout << names[bobId] << endl; // Bob
-ID joeId = names.create("Joe");
-cout << names[joeId] << endl; // Joe
-names.erase(bobId); // Removes Bob from the array
-cout << names[joeId] << endl; // Still Joe, even though Joe has taken Bob's space in memory
-
-// You can iterate through the array like a normal STL container:
-names.create("Kevin");
-names.create("Miles");
-names.create("Eric");
-// C++11:
-for (auto& n: names)
-    cout << n << endl;
-// Or with iterators:
-for (auto i = names.begin(); i != names.end(); ++i)
-    cout << *i << endl;
-// This is recommended when you need to access all of the elements in the array, as this will
-// be good with your cache since it is accessing the internal contiguous array instead of
-// looking up the IDs in the external index.
-*/
-
 template <class Type>
 class PackedArray
 {
     public:
 
-        using ID = int64_t;
+        using ID = uint64_t;
+        static const ID invalidId = std::numeric_limits<ID>::max();
+        using Container = std::vector<Type>;
 
-        PackedArray()
+        class Handle
         {
-        }
+            public:
+                Handle(PackedArray<Type>& array, ID id): array(array), id(id) {}
+                bool valid() const { return array.isValid(id); }
+                Type& access() { return array[id]; }
+                operator Type&() { return access(); }
+                Type* operator-> () { return &access(); }
+                Type& operator* () { return access(); }
 
-        // Pre-allocate an amount of elements
-        PackedArray(size_t elementsToReserve)
+            private:
+                PackedArray<Type>& array;
+                PackedArray::ID id;
+        };
+
+        PackedArray() {}
+
+        PackedArray(size_t spaceToReserve)
         {
-            elements.reserve(elementsToReserve);
-            reverseLookup.reserve(elementsToReserve);
+            elements.reserve(spaceToReserve);
+            index.getKeyMap().reserve(spaceToReserve);
+            index.getValueMap().reserve(spaceToReserve);
         }
-
-        ////////////////////////////////////////////////////////////////////////////
-        // The following functions access everything using the external index IDs //
-        ////////////////////////////////////////////////////////////////////////////
 
         // Adds a new object and returns its ID
         template <typename... Args>
         ID create(Args&&... args)
         {
-            ID internalId = elements.size();
+            ID id = nextId++;
+            index.insert(id, elements.size());
             elements.emplace_back(std::forward<Args>(args)...);
-            ID externalId = addToIndex(internalId);
-            reverseLookup.push_back(externalId);
-            return externalId;
+            return id;
         }
 
-        // Returns a reference to the object with the specfied ID.
-        // Warning: You must only pass valid IDs that were returned by the create function,
-        // or this will cause undefined behavior. You can easily check if an ID is valid with
-        // the isValid function.
+        // Returns a reference to the object with the specified ID
         Type& operator[] (ID id)
         {
-            return elements[index[id]];
+            return elements[index.getValue(id)];
         }
 
-        // Returns true if the ID is in range and has an allocated space in the internal array
+        // Returns a handle to the object with the specified ID
+        Handle get(ID id)
+        {
+            return Handle(*this, id);
+        }
+
+        // Returns true if the ID is valid
         bool isValid(ID id) const
         {
-            return (id >= 0 && id < static_cast<ID>(index.size()) && index[id] >= 0);
+            return (index.getValue(id) != index.invalidValue);
         }
 
-        // "Deallocates" an object by swapping and updating the index, so nothing appears to change
+        // Removes the object with the specified ID
         void erase(ID id)
         {
-            if (isValid(id)) // Make sure the ID is valid
+            auto pos = index.getValue(id);
+            if (pos != index.invalidValue)
             {
-                ID internalId = index[id]; // Lookup the internal ID of the object
-                removeFromIndex(id); // Remove the ID from the index
-                ID swappedId = swapErase(elements, internalId); // Remove the object
-                if (swappedId >= 0) // If another object was swapped
-                    index[reverseLookup[swappedId]] = internalId; // Update the swapped object's internal ID
-                swapErase(reverseLookup, internalId); // Remove the ID from the reverse lookup
-                // (Needs to keep the array parallel with the elements array)
+                // Overwrite the object being erased
+                auto swappedPos = swapErase(pos);
+                auto swappedId = index.getKey(swappedPos);
+
+                // Remove the unused values
+                index.getValueMap().erase(id);
+                index.getKeyMap().erase(swappedPos);
+
+                // Update both maps using their existing keys
+                index.insert(swappedId, pos);
             }
         }
 
@@ -153,20 +106,14 @@ class PackedArray
         void clear()
         {
             elements.clear();
-            reverseLookup.clear();
             index.clear();
-            freeList.clear();
         }
 
-        // Returns the current index size
+        // Returns the number of elements
         size_t size() const
         {
-            return index.size();
+            return elements.size();
         }
-
-        ///////////////////////////////////////////////////////////////////////////
-        // The following functions are for accessing the internal array directly //
-        ///////////////////////////////////////////////////////////////////////////
 
         typename std::vector<Type>::iterator begin()
         {
@@ -178,77 +125,41 @@ class PackedArray
             return elements.end();
         }
 
-        typename std::vector<Type>::const_iterator begin() const
+        typename std::vector<Type>::const_iterator cbegin() const
         {
             return elements.cbegin();
         }
 
-        typename std::vector<Type>::const_iterator end() const
+        typename std::vector<Type>::const_iterator cend() const
         {
             return elements.cend();
         }
 
-        // Returns the current number of allocated elements
-        size_t capacity() const
-        {
-            return elements.size();
-        }
-
     private:
 
-        // Adds an internal ID to the index, returning the new external ID
-        ID addToIndex(ID internalId)
+        size_t swapErase(size_t pos)
         {
-            ID newId;
-            if (freeList.empty())
+            // This function overwrites the specified element with the last element
+            // Returns the position of the element that was moved, or invalid if nothing else was affected
+            size_t oldPos = index.invalidValue;
+            if (pos < elements.size() && !elements.empty())
             {
-                newId = index.size();
-                index.push_back(internalId);
+                if (elements.size() == 1)
+                    elements.pop_back(); // Remove the last and only object
+                else
+                {
+                    elements[pos] = std::move(elements.back()); // Replace the old object with the last one
+                    elements.pop_back(); // Remove the last object
+                    oldPos = elements.size(); // The ID of the old last object
+                }
             }
-            else
-            {
-                newId = freeList.back();
-                freeList.pop_back();
-                index[newId] = internalId;
-            }
-            return newId;
+            return oldPos;
         }
 
-        // Removes an external ID from the index
-        void removeFromIndex(ID externalId)
-        {
-            freeList.push_back(index[externalId]);
-            index[externalId] = -1;
-        }
-
-        template <typename Type>
-        ID swapErase(std::vector<Type>& vec, size_t pos);
-
-        std::vector<Type> elements; // Inner array containing the actual objects
-        std::vector<ID> reverseLookup; // This is used for deleting elements and updating the proper IDs in the normal lookup
-        std::vector<ID> index; // The index, which contains all of the internal IDs, and is accessed by external ID
-        std::vector<ID> freeList; // The free "holes" in the index, used like a stack (used vector for clear function)
+        ID nextId = 0;
+        Container elements;
+        ReverseMap<ID, size_t> index;
 };
-
-template <typename Type>
-ID PackedArray::swapErase(std::vector<Type>& vec, size_t pos)
-{
-    // This function overwrites the specified element with the last element
-    // Returns the position of the element that was moved, or -1 if nothing else was affected
-    ID oldPos = -1;
-    if (pos < vec.size() && !vec.empty())
-    {
-        if (vec.size() == 1)
-            vec.pop_back(); // Remove the last and only object
-        else
-        {
-            vec[pos] = vec.back(); // Replace the old object with the last one
-            vec.pop_back(); // Remove the last object
-            oldPos = vec.size(); // The ID of the old last object
-        }
-    }
-    return oldPos;
-}
 
 }
 
