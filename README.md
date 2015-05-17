@@ -2,7 +2,7 @@
 
 An easy to use, high performance, C++14 "Entity Component System" library.
 
-Note: Depending on how much [OCS](https://github.com/Lastresort92/OCS) gets updated, this library may not be needed.
+Note: Some of these features are not completed yet.
 
 
 ## Purpose
@@ -21,7 +21,7 @@ This library was inspired by the following amazing libraries:
 
 ## Important Features
 
-With all of the existing entity systems, here are the reasons I needed/wanted this one:
+No other entity system currently has **all** of these features:
 
 * Can access/update components with strings
   * Allows for loading from files
@@ -33,6 +33,8 @@ With all of the existing entity systems, here are the reasons I needed/wanted th
   * Components are stored in contiguous arrays, one for each type
 * Heavily uses the "assign" idiom
   * Accessing or setting components will automatically add them first if they don't already exist
+  * Same for entities in the world
+* Supports transferring entities between worlds
 * Simplified systems for updating components
   * Built-in, cache efficient filters reduce boilerplate code
 * Improved prototypes
@@ -43,11 +45,14 @@ With all of the existing entity systems, here are the reasons I needed/wanted th
 
 ## Terms Explained
 
-* System: Updates components. This is where your logic goes.
+* System: Updates components.
+  * **User defined:** This is where your logic goes.
 * World: A collection of entities.
 * Entity: A collection of components.
-* Component: A struct that holds some data. No logic should be here.
-* Prototype: A preloaded set of components for an entity, can be defined in a file.
+* Component: A struct that holds some data.
+  * **User defined:** No logic should be here.
+* Prototype: A preloaded set of components for an entity.
+  * **User defined:** You can create a file containing the prototype definitions.
 
 
 ## Prototypes
@@ -55,8 +60,10 @@ With all of the existing entity systems, here are the reasons I needed/wanted th
 Prototypes can be defined in the [ConfigFile](https://github.com/ayebear/ConfigFile) format, and loaded from various sources such as a file, string, or a network.
 
 * Component names must be properly defined/bound first.
-* Prototypes and their names are global, so they don't need to be reloaded across worlds.
-* Multiple inheritance is fully supported. Loops and the diamond problem are solved by ignoring entity names already loaded into each entity.
+* Prototypes and their names are static, so they don't need to be reloaded across worlds.
+* Multiple inheritance is fully supported.
+  * Loops and the diamond problem are solved by ignoring entity names already loaded into each entity.
+  * As the same components are encountered, they are overridden with the latest components.
 
 #### Example prototypes file:
 
@@ -95,78 +102,151 @@ Note: Some of these features aren't fully designed/implemented yet, and may chan
 ##### Create a world to hold entities:
 
 ```cpp
+#include "es/world.h"
+
 es::World world;
 ```
 
 ##### Create entities:
 
+Creating an entity returns a handle with a unique ID. This handle can be used directly to access components, as shown in the Components section.
+
+Create an empty entity, which can optionally be named:
+
 ```cpp
-auto ent = world.create(); // Empty, unnamed entity
-auto ent = world.create("name"); // Empty entity with name
-auto ent = world.clone("Type"); // From prototype, with no name
-auto ent = world.clone("Type", "name"); // From prototype, register name
-auto ent = world["name"]; // Only creates a new entity if the name isn't already registered
+auto ent = world.create();
+auto ent2 = world.create("name");
+```
+
+Create an entity from a prototype, which can also be named:
+
+```cpp
+auto ent = world.copy("Type");
+auto ent2 = world.copy("Type", "name");
+
+// Those are basically just syntactic sugar for this:
+auto ent3 = World::prototypes["Type"].clone(world, "name");
 ```
 
 ##### Access entities:
 
 ```cpp
-auto ent = world.get(entityId);
+auto entId = ent.getId();
+
+// Will be invalid if the ID/name does not exist
+auto ent = world[entId];
+auto ent = world.get(entId);
 auto ent = world.get("name");
 
-// Created automatically
-auto ent = world[entityId];
+// Created automatically if it doesn't exist
 auto ent = world["name"];
 
 // Check if an entity is valid
 if (ent)
-    // Do something with the entity
+    ...
+if (ent.valid())
+    ...
 ```
 
 ##### Register entity names:
+
+Bind a name to an existing entity:
 
 ```cpp
 ent.bindName("name");
 ```
 
+Then, you can access this entity from the world by its name, instead of its ID.
+
 ##### Copy entities:
 
+Inside a single world:
+
 ```cpp
-auto ent2 = ent; // ent2 is just another reference to the same entity!
-auto ent3 = ent.clone(); // Copies all components and makes a new entity
+// ent2 is just another reference to the same entity!
+auto ent2 = ent;
+
+// Copies all components and makes a new entity without a name
+auto ent3 = ent.clone();
+
+// Copies all components and makes a new entity with a name
+auto ent4 = ent.clone("newName");
 ```
+
+Between multiple worlds:
+
+```cpp
+es::World world2;
+
+// Without a name
+auto ent5 = ent.clone(world2);
+
+// With a name
+auto ent6 = ent.clone(world2, "newName");
+```
+
+Note: ent5 and ent6 are part of world2.
 
 ##### Delete entities:
 
+Delete the entities' components, and remove the entity from the world:
+
 ```cpp
 ent.destroy();
-world.destroy(ent.getId());
 ```
+
+After this, the entity is no longer valid and should not be used.
+
 
 ### Components
 
 ##### Define components:
 
-TODO: Determine syntax
+esComponent(Position)
+{
+    float x {0.0f};
+    float y {0.0f};
+
+    Position(float x, float y): x{x}, y{y} {}
+
+    void fromString(const std::string& str)
+    {
+        es::extract(str, x, y);
+    }
+
+    std::string toString() const
+    {
+        return es::cat(x, y);
+    }
+};
 
 ##### Bind/register component names to types:
-Note: Name binding is global, and applies to all World instances. (Won't need this if the names are defined in components.)
+
+Name binding is static, and applies to all World instances.
+
+Note: This probably won't be required, it'll automatically happen when defining your components.
 
 ```cpp
-es::bindName<Component>("Component");
-es_bindName(Component);
+es::bindName<Position>("Position");
+esBindName(Position);
 ```
 
-##### Accessing components (will create automatically if needed):
+##### Accessing components:
+
+By default, accessing components will return a special es::ComponentHandle object, which is based on es::PackedArray::Handle. This allows you to store the handles for long periods of time, and they still work properly even if the array reallocates, or if the components themselves are moved in memory.
+
+Access components (will be created if they don't exist):
 
 ```cpp
-auto ent = world[id];
-auto& baseComp = ent["Component"];
-auto& baseComp = ent.at("Component");
-auto& comp = ent.at<Component>();
+auto baseComp = ent["Component"];
+auto baseComp2 = ent.at("Component");
+auto comp = ent.at<Component>();
+
+// Can chain calls
+auto comp = world["someEntity"]["Component"];
 ```
 
-##### Accessing components (won't create):
+Access components (won't create):
 
 ```cpp
 auto baseComp = ent.get("Component");
@@ -175,6 +255,24 @@ auto comp = ent.get<Component>();
 Component comp;
 ent >> comp;
 ```
+
+Access raw components directly:
+
+```cpp
+if (comp)
+{
+    auto& rawComp = comp.access();
+    rawComp.x = 5;
+}
+```
+
+Use the handle to access members in a component:
+
+```cpp
+comp->x = 5;
+(*comp).x = 5;
+```
+
 
 ##### Update/create components:
 
