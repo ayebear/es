@@ -165,7 +165,7 @@ After this, the entity is no longer valid and should not be used.
 ##### Define components:
 
 ```cpp
-esComponent(Position)
+struct Position: public es::Component
 {
     float x {0.0f};
     float y {0.0f};
@@ -174,25 +174,17 @@ esComponent(Position)
 
     void fromString(const std::string& str)
     {
-        es::extract(str, x, y);
+        es::unpack(str, x, y);
     }
 
     std::string toString() const
     {
-        return es::cat(x, y);
+        return es::pack(x, y);
     }
 };
-```
 
-##### Bind/register component names to types:
-
-Name binding is static, and applies to all World instances.
-
-Note: This probably won't be required, it'll automatically happen when defining your components.
-
-```cpp
-es::bindName<Position>("Position");
-esBindName(Position);
+// Binds the name and type of the component
+esRegister(Position);
 ```
 
 ##### Accessing components:
