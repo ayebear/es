@@ -40,8 +40,6 @@ class PackedArray
             index.getValueMap().reserve(spaceToReserve);
         }
 
-        ~PackedArray() {}
-
         // Adds a new object and returns its ID
         template <typename... Args>
         ID create(Args&&... args)
