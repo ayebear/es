@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2015 Eric Hebert (ayebear)
+// Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
 #ifndef EVENTS_H
@@ -13,36 +13,11 @@
 namespace es
 {
 
-template <class T>
-using EventQueueType = std::deque<T>;
-
-// The following classes are needed for clearAll to work.
-
-struct BaseEventQueue
-{
-    virtual ~BaseEventQueue() {}
-    virtual void clear() = 0;
-    virtual size_t size() const = 0;
-};
-
-template <class EventType>
-struct EventQueue: public BaseEventQueue
-{
-    EventQueueType<EventType> events;
-
-    void clear()
-    {
-        events.clear();
-    }
-
-    size_t size() const
-    {
-        return events.size();
-    }
-};
-
 /*
 TODO:
+    Implement a better way of receiving events
+        That way you wouldn't need to clear them
+        Or, clearAll would only clear the events read
     Add frame counter debugging feature.
         When the frame # of the event != the current frame counter,
             your events are being received too late!
@@ -61,6 +36,10 @@ To clear all events:
 class Events
 {
     public:
+
+        template <class T>
+        using EventQueueType = std::deque<T>;
+
         // Returns a reference to the queue of the specified type
         template <class T>
         static EventQueueType<T>& get()
@@ -115,6 +94,31 @@ class Events
         }
 
     private:
+
+        // The following classes are needed for clearAll to work.
+        struct BaseEventQueue
+        {
+            virtual ~BaseEventQueue() {}
+            virtual void clear() = 0;
+            virtual size_t size() const = 0;
+        };
+
+        template <class EventType>
+        struct EventQueue: public BaseEventQueue
+        {
+            EventQueueType<EventType> events;
+
+            void clear()
+            {
+                events.clear();
+            }
+
+            size_t size() const
+            {
+                return events.size();
+            }
+        };
+
         // Returns instance of correct event queue class
         template <class T>
         static EventQueue<T>& getQueue()

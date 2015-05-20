@@ -1,0 +1,116 @@
+// Copyright (C) 2015 Eric Hebert (ayebear)
+// This code is licensed under LGPLv3, see LICENSE.txt for details.
+
+#ifndef COMPONENTARRAY_H
+#define COMPONENTARRAY_H
+
+#include "es/component.h"
+#include "es/packedarray.h"
+#include "es/id.h"
+#include <memory>
+
+namespace es
+{
+
+// An interface for using a PackedArray of any component type
+class BaseComponentArray
+{
+    public:
+        BaseComponentArray() {}
+        virtual ~BaseComponentArray() {}
+
+        virtual std::unique_ptr<BaseComponentArray> clone() const = 0;
+        virtual Handle<BaseComponentArray, Component> getBaseHandle(ID id) = 0;
+
+        virtual ID create() = 0;
+        virtual Component& operator[] (ID id) = 0;
+        virtual const Component& operator[] (ID id) const = 0;
+        virtual Component* get(ID id) = 0;
+        virtual const Component* get(ID id) const = 0;
+        virtual bool isValid(ID id) const = 0;
+        virtual void erase(ID id) = 0;
+        virtual void clear() = 0;
+        virtual size_t size() const = 0;
+};
+
+// A wrapper around a PackedArray designed for storing components
+template <class T>
+class ComponentArray: public BaseComponentArray
+{
+    public:
+        ComponentArray() {}
+        ~ComponentArray() {}
+
+        virtual std::unique_ptr<BaseComponentArray> clone() const
+        {
+            return std::make_unique<ComponentArray<T>>(static_cast<const ComponentArray<T>&>(*this));
+        }
+
+        Handle<BaseComponentArray, Component> getBaseHandle(ID id)
+        {
+            return Handle<BaseComponentArray, Component>(*this, id);
+        }
+
+        ID create()
+        {
+            return array.create();
+        }
+
+        template <typename... Args>
+        ID create(Args&&... args)
+        {
+            return array.create(std::forward<Args>(args)...);
+        }
+
+        T& operator[] (ID id)
+        {
+            return array[id];
+        }
+
+        const T& operator[] (ID id) const
+        {
+            return array[id];
+        }
+
+        T* get(ID id)
+        {
+            return array.get(id);
+        }
+
+        const T* get(ID id) const
+        {
+            return array.get(id);
+        }
+
+        Handle<PackedArray<T>, T> getHandle(ID id)
+        {
+            return array.getHandle(id);
+        }
+
+        bool isValid(ID id) const
+        {
+            return array.isValid(id);
+        }
+
+        void erase(ID id)
+        {
+            array.erase(id);
+        }
+
+        void clear()
+        {
+            array.clear();
+        }
+
+        size_t size() const
+        {
+            return array.size();
+        }
+
+    private:
+        PackedArray<T> array;
+};
+
+}
+
+#endif

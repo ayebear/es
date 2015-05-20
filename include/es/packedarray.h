@@ -1,13 +1,15 @@
-// Copyright (C) 2014-2015 Eric Hebert (ayebear)
+// Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef PACKEDARRAY_H
-#define PACKEDARRAY_H
+#ifndef ES_PACKEDARRAY_H
+#define ES_PACKEDARRAY_H
 
 #include <cstdint>
 #include <vector>
 #include <limits>
+#include "id.h"
 #include "reversemap.h"
+#include "handle.h"
 
 namespace es
 {
@@ -22,29 +24,12 @@ PackedArray 2.0
     O(1): Add, access, remove
     Supports directly iterating through internal array
 */
-template <class Type>
+template <class T>
 class PackedArray
 {
     public:
 
-        using ID = uint64_t;
-        static const ID invalidId = std::numeric_limits<ID>::max();
-        using Container = std::vector<Type>;
-
-        class Handle
-        {
-            public:
-                Handle(PackedArray<Type>& array, ID id): array(array), id(id) {}
-                bool valid() const { return array.isValid(id); }
-                Type& access() { return array[id]; }
-                operator Type&() { return access(); }
-                Type* operator-> () { return &access(); }
-                Type& operator* () { return access(); }
-
-            private:
-                PackedArray<Type>& array;
-                PackedArray::ID id;
-        };
+        using Container = std::vector<T>;
 
         PackedArray() {}
 
@@ -54,6 +39,8 @@ class PackedArray
             index.getKeyMap().reserve(spaceToReserve);
             index.getValueMap().reserve(spaceToReserve);
         }
+
+        ~PackedArray() {}
 
         // Adds a new object and returns its ID
         template <typename... Args>
@@ -66,15 +53,47 @@ class PackedArray
         }
 
         // Returns a reference to the object with the specified ID
-        Type& operator[] (ID id)
+        // Warning: Using this with an invalid ID is undefined behavior
+        T& operator[] (ID id)
         {
             return elements[index.getValue(id)];
         }
 
-        // Returns a handle to the object with the specified ID
-        Handle get(ID id)
+        // Returns a const reference to the object with the specified ID
+        // Warning: Using this with an invalid ID is undefined behavior
+        const T& operator[] (ID id) const
         {
-            return Handle(*this, id);
+            return elements[index.getValue(id)];
+        }
+
+        // Returns a pointer to an object, or nullptr if the ID is invalid
+        T* get(ID id)
+        {
+            auto pos = index.getValue(id);
+            if (pos != index.invalidValue)
+                return &elements[pos];
+            return nullptr;
+        }
+
+        // Returns a const pointer to an object, or nullptr if the ID is invalid
+        const T* get(ID id) const
+        {
+            auto pos = index.getValue(id);
+            if (pos != index.invalidValue)
+                return &elements[pos];
+            return nullptr;
+        }
+
+        // Returns a handle to the object with the specified ID
+        Handle<PackedArray<T>, T> getHandle(ID id)
+        {
+            return Handle<PackedArray<T>, T>(*this, id);
+        }
+
+        // Returns a const handle to the object with the specified ID
+        const Handle<const PackedArray<T>, const T> getHandle(ID id) const
+        {
+            return Handle<const PackedArray<T>, const T>(*this, id);
         }
 
         // Returns true if the ID is valid
