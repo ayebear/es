@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef COMPONENTPOOL_H
-#define COMPONENTPOOL_H
+#ifndef ES_COMPONENTPOOL_H
+#define ES_COMPONENTPOOL_H
 
 #include "es/componentarray.h"
 #include <typeindex>

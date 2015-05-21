@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef SERIALIZE_H
-#define SERIALIZE_H
+#ifndef ES_SERIALIZE_H
+#define ES_SERIALIZE_H
 
 #include <string>
 #include <sstream>

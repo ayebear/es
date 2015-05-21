@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef COMPONENTSETUP_H
-#define COMPONENTSETUP_H
+#ifndef ES_COMPONENTSETUP_H
+#define ES_COMPONENTSETUP_H
 
 #include "es/componentpool.h"
 

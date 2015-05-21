@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef ENTITYPROTOTYPELOADER_H
-#define ENTITYPROTOTYPELOADER_H
+#ifndef ES_ENTITYPROTOTYPELOADER_H
+#define ES_ENTITYPROTOTYPELOADER_H
 
 #include "OCS/Objects/ObjectManager.hpp"
 #include "configfile.h"

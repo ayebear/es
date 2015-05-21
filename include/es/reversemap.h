@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef REVERSEMAP_H
-#define REVERSEMAP_H
+#ifndef ES_REVERSEMAP_H
+#define ES_REVERSEMAP_H
 
 #include <unordered_map>
 #include <limits>

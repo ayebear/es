@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef COMPONENTARRAY_H
-#define COMPONENTARRAY_H
+#ifndef ES_COMPONENTARRAY_H
+#define ES_COMPONENTARRAY_H
 
 #include "es/component.h"
 #include "es/packedarray.h"

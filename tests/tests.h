@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef TESTS_H
-#define TESTS_H
+#ifndef ES_TESTS_H
+#define ES_TESTS_H
 
 #include "es/component.h"
 #include "es/componentsetup.h"

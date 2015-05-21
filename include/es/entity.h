@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef ENTITY_H
-#define ENTITY_H
+#ifndef ES_ENTITY_H
+#define ES_ENTITY_H
 
 #include "es/component.h"
 #include "es/componentpool.h"

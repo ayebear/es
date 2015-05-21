@@ -1,8 +1,8 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#ifndef SYSTEM_H
-#define SYSTEM_H
+#ifndef ES_SYSTEM_H
+#define ES_SYSTEM_H
 
 namespace es
 {
