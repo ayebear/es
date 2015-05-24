@@ -33,10 +33,16 @@ class ComponentPool
         template <typename T>
         ComponentArray<T>& get();
 
+        // Returns the base componeny array from the component's type index
+        BaseComponentArray* operator[](const std::type_index& typeIdx) const;
+
         // Returns the base component array from the component's name
         // Creates a new array if it doesn't exist
         // Returns nullptr if the type is invalid
         BaseComponentArray* operator[](const std::string& compName);
+
+        // Returns the type index of a component from string name
+        const std::type_index& getTypeIndex(const std::string& compName) const;
 
         // Clears all components, and sets up new arrays cloned from registered types
         void reset();
@@ -50,6 +56,8 @@ class ComponentPool
 
         // All components are stored here, separated by type
         std::unordered_map<std::type_index, ComponentArrayPtr> components;
+
+        static const std::type_index invalidTypeIdx;
 
         // Contains a type index and a clonable empty component array
         struct ComponentInfo

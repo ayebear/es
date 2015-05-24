@@ -3,10 +3,11 @@ project (ES)
 
 set (ES_SOURCE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/es/componentpool.cpp
-	#${CMAKE_CURRENT_SOURCE_DIR}/src/es/entityprototypeloader.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/es/world.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/es/core.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/es/entity.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/es/world.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/es/systemcontainer.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/src/es/entityprototypeloader.cpp
 )
 
 set (ES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.cpp)

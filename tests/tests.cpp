@@ -9,6 +9,7 @@
 #include "es/packedarray.h"
 #include "es/componentpool.h"
 #include "es/serialize.h"
+#include "es/world.h"
 
 int main()
 {
@@ -34,6 +35,7 @@ void runTests()
     componentPoolTests();
     entityTests();
     worldTests();
+    prototypeTests();
     eventTests();
     systemTests();
     std::cout << "All tests passed!\n";
@@ -220,10 +222,73 @@ void componentPoolTests()
 
 void entityTests()
 {
+    es::World world;
+    auto ent = world.create();
 
+    ent.assign<Position>(55, 67).assign<Velocity>(97, 650);
+
+    ent.assignFrom(Position(1, 2), Velocity(6, 2));
+
+    ent << Position(100, 200) << Velocity(150, 300);
+
+    auto pos = ent.getPtr<Position>();
+    assert(pos && pos->x > 99.0f && pos->x < 101.0f);
+
+    auto posHandle = ent.get<Position>();
+    assert(posHandle && posHandle->x > 99.0f && posHandle->x < 101.0f);
+
+    bool hasComps = ent.has<Position, Velocity>();
+    assert(hasComps);
+    hasComps = ent.has<std::string, std::string, Position, Velocity, int, std::string>();
+    assert(!hasComps);
+    hasComps = ent.has<std::string>();
+    assert(!hasComps);
+
+    assert(ent.has("Position"));
+    assert(ent.has("Position", "Velocity"));
+    assert(!ent.has("Position", "Velocity", "Unknown"));
+
+    assert(ent.numComponents() == 2);
+    ent.removeAll();
+    assert(ent.numComponents() == 0);
+
+    ent << Position(100, 200) << Velocity(150, 300);
+    assert(ent.numComponents() == 2);
+    ent.remove<Position>();
+    assert(ent.numComponents() == 1);
+    ent.remove<Velocity>();
+    assert(ent.numComponents() == 0);
+
+    ent << Position(100, 200) << Velocity(150, 300);
+    assert(ent.numComponents() == 2);
+    ent.remove<Position, Velocity>();
+    assert(ent.numComponents() == 0);
+    ent.remove<std::string, int, float>();
+    assert(ent.numComponents() == 0);
+
+    ent << Position(10, 50) << Velocity(20, 40);
+    assert(ent.at<Position>()->x == 10);
+    assert(ent.get<Position>()->y == 50);
+    assert(ent.getPtr<Velocity>()->x == 20);
+    assert(ent.access<Velocity>().y == 40);
+
+    // TODO: Test string-based accessing of components
 }
 
 void worldTests()
+{
+    es::World world;
+    auto ent = world.create();
+    auto ent2 = world.create("namedEntity");
+    auto ent3 = world["test"];
+    assert(ent && ent2 && ent3);
+    ent.destroy();
+    ent2.destroy();
+    ent3.destroy();
+    assert(!ent && !ent2 && !ent3);
+}
+
+void prototypeTests()
 {
 
 }

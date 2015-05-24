@@ -97,7 +97,7 @@ class PackedArray
         // Returns true if the ID is valid
         bool isValid(ID id) const
         {
-            return (index.getValue(id) != index.invalidValue);
+            return (id != invalidId && index.getValue(id) != index.invalidValue);
         }
 
         // Removes the object with the specified ID

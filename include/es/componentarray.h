@@ -21,6 +21,7 @@ class BaseComponentArray
 
         virtual std::unique_ptr<BaseComponentArray> clone() const = 0;
         virtual Handle<BaseComponentArray, Component> getBaseHandle(ID id) = 0;
+        virtual ID copyFrom(const BaseComponentArray& baseSrcArray, ID id) = 0;
 
         virtual ID create() = 0;
         virtual Component& operator[] (ID id) = 0;
@@ -49,6 +50,11 @@ class ComponentArray: public BaseComponentArray
         Handle<BaseComponentArray, Component> getBaseHandle(ID id)
         {
             return Handle<BaseComponentArray, Component>(*this, id);
+        }
+
+        ID copyFrom(const BaseComponentArray& baseSrcArray, ID id)
+        {
+            return create(static_cast<const ComponentArray<T>&>(baseSrcArray)[id]);
         }
 
         ID create()

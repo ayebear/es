@@ -6,9 +6,19 @@
 namespace es
 {
 
+const std::type_index ComponentPool::invalidTypeIdx {typeid(void)};
+
 ComponentPool::ComponentPool()
 {
     refresh();
+}
+
+BaseComponentArray* ComponentPool::operator[](const std::type_index& typeIdx) const
+{
+    auto found = components.find(typeIdx);
+    if (found != components.end())
+        return found->second.get();
+    return nullptr;
 }
 
 BaseComponentArray* ComponentPool::operator[](const std::string& compName)
@@ -18,6 +28,15 @@ BaseComponentArray* ComponentPool::operator[](const std::string& compName)
     if (info != getCompNames().end())
         return setupArray(info->second);
     return nullptr;
+}
+
+const std::type_index& ComponentPool::getTypeIndex(const std::string& compName) const
+{
+    // Get the type index from the component name
+    auto info = getCompNames().find(compName);
+    if (info != getCompNames().end())
+        return info->second.typeIdx;
+    return invalidTypeIdx;
 }
 
 void ComponentPool::reset()

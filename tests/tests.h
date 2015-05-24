@@ -19,6 +19,7 @@ void componentTests();
 void componentPoolTests();
 void entityTests();
 void worldTests();
+void prototypeTests();
 void eventTests();
 void systemTests();
 
