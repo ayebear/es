@@ -13,6 +13,11 @@ ComponentPool::ComponentPool()
     refresh();
 }
 
+bool ComponentPool::validName(const std::string& compName)
+{
+    return (getCompNames().find(compName) != getCompNames().end());
+}
+
 BaseComponentArray* ComponentPool::operator[](const std::type_index& typeIdx) const
 {
     auto found = components.find(typeIdx);

@@ -42,6 +42,9 @@ struct Core
     // Removes an entity by its ID (but not its components)
     void remove(ID id);
 
+    // Removes all entities
+    void clear();
+
     // Register a name to an entity
     void setName(ID id, const std::string& name);
 

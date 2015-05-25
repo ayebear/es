@@ -33,12 +33,13 @@ class Entity
         template <typename T, typename... Args>
         Entity& assign(Args&&... args);
 
-        // Same as value based assign method
+        // Same as assignFrom()
         template <typename T>
         Entity& operator<<(const T& comp);
 
         // Deserializes component name and data
         Entity& operator<<(const std::string& data);
+
 
         // Accessing components (No automatic creation) ======================
         // Note: When the component type doesn't exist, these return an
@@ -78,9 +79,8 @@ class Entity
 
         // Returns a base component reference by component name
         Component& access(const std::string& name);
-
-        // Returns a base component reference by component name
         Component& operator[](const std::string& name);
+        Component& operator[](const char* name);
 
 
         // Checking components ===============================================
@@ -127,11 +127,12 @@ class Entity
 
         // Entity copying ====================================================
 
-        // Creates a copy of this entity, and returns its new ID
+        // Creates a copy of this entity, and returns it
         Entity clone(const std::string& newName = "") const;
 
-        // Copies this entity into another world, and returns its ID
+        // Copies this entity into another world, and returns it
         Entity clone(Core& newCore, const std::string& newName = "") const;
+
 
         // Entity information ================================================
 
@@ -157,7 +158,7 @@ class Entity
         bool valid() const;
 
         // Returns true if this is a valid entity
-        operator bool() const;
+        explicit operator bool() const;
 
 
         // Serialization =====================================================
@@ -189,7 +190,7 @@ class Entity
         // Remove a component by type index
         void removeComp(const std::type_index& typeIdx);
 
-        // For ending recursion of variadic templates
+        // For ending recursion
         void assignFrom() {}
 
         Core& core;
@@ -229,7 +230,7 @@ Entity& Entity::operator<<(const T& comp)
 template <typename T>
 Handle<ComponentArray<T>, T> Entity::get()
 {
-    return {core.components.get<T>(), getCompId<T>()};
+    return {&core.components.get<T>(), getCompId<T>()};
 }
 
 template <typename T>

@@ -14,7 +14,7 @@ Entity& Entity::operator<<(const std::string& data)
 
 Handle<BaseComponentArray, Component> Entity::get(const std::string& name)
 {
-    return {*core.components[name], getCompId(name)};
+    return {core.components[name], getCompId(name)};
 }
 
 Component* Entity::getPtr(const std::string& name)
@@ -27,7 +27,7 @@ Component* Entity::getPtr(const std::string& name)
 
 Handle<BaseComponentArray, Component> Entity::at(const std::string& name)
 {
-    return {*core.components[name], atCompId(name)};
+    return {core.components[name], atCompId(name)};
 }
 
 Component& Entity::access(const std::string& name)
@@ -37,6 +37,11 @@ Component& Entity::access(const std::string& name)
 }
 
 Component& Entity::operator[](const std::string& name)
+{
+    return access(name);
+}
+
+Component& Entity::operator[](const char* name)
 {
     return access(name);
 }

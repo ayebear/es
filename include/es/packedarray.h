@@ -85,13 +85,13 @@ class PackedArray
         // Returns a handle to the object with the specified ID
         Handle<PackedArray<T>, T> getHandle(ID id)
         {
-            return Handle<PackedArray<T>, T>(*this, id);
+            return {this, id};
         }
 
         // Returns a const handle to the object with the specified ID
         const Handle<const PackedArray<T>, const T> getHandle(ID id) const
         {
-            return Handle<const PackedArray<T>, const T>(*this, id);
+            return {this, id};
         }
 
         // Returns true if the ID is valid
@@ -108,14 +108,28 @@ class PackedArray
             {
                 // Overwrite the object being erased
                 auto swappedPos = swapErase(pos);
-                auto swappedId = index.getKey(swappedPos);
 
-                // Remove the unused values
-                index.getValueMap().erase(id);
-                index.getKeyMap().erase(swappedPos);
+                if (swappedPos == index.invalidValue)
+                {
+                    // Clear the index if there are no more elements
+                    index.clear();
+                }
+                else if (swappedPos == pos)
+                {
+                    // Remove the ID/pos that was erased (nothing was swapped)
+                    index.eraseByValue(pos);
+                }
+                else
+                {
+                    auto swappedId = index.getKey(swappedPos);
 
-                // Update both maps using their existing keys
-                index.insert(swappedId, pos);
+                    // Remove the unused values
+                    index.getValueMap().erase(id);
+                    index.getKeyMap().erase(swappedPos);
+
+                    // Update both maps using their existing keys
+                    index.insert(swappedId, pos);
+                }
             }
         }
 
@@ -165,7 +179,8 @@ class PackedArray
                     elements.pop_back(); // Remove the last and only object
                 else
                 {
-                    elements[pos] = std::move(elements.back()); // Replace the old object with the last one
+                    if (pos != elements.size() - 1)
+                        elements[pos] = std::move(elements.back()); // Replace the old object with the last one
                     elements.pop_back(); // Remove the last object
                     oldPos = elements.size(); // The ID of the old last object
                 }

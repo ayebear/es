@@ -20,7 +20,6 @@ class BaseComponentArray
         virtual ~BaseComponentArray() {}
 
         virtual std::unique_ptr<BaseComponentArray> clone() const = 0;
-        virtual Handle<BaseComponentArray, Component> getBaseHandle(ID id) = 0;
         virtual ID copyFrom(const BaseComponentArray& baseSrcArray, ID id) = 0;
 
         virtual ID create() = 0;
@@ -45,11 +44,6 @@ class ComponentArray: public BaseComponentArray
         virtual std::unique_ptr<BaseComponentArray> clone() const
         {
             return std::make_unique<ComponentArray<T>>(static_cast<const ComponentArray<T>&>(*this));
-        }
-
-        Handle<BaseComponentArray, Component> getBaseHandle(ID id)
-        {
-            return Handle<BaseComponentArray, Component>(*this, id);
         }
 
         ID copyFrom(const BaseComponentArray& baseSrcArray, ID id)
@@ -86,11 +80,6 @@ class ComponentArray: public BaseComponentArray
         const T* get(ID id) const
         {
             return array.get(id);
-        }
-
-        Handle<PackedArray<T>, T> getHandle(ID id)
-        {
-            return array.getHandle(id);
         }
 
         bool isValid(ID id) const

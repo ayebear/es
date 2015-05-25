@@ -28,6 +28,9 @@ class ComponentPool
         template <typename T>
         static void registerComponent(const std::string& compName);
 
+        // Returns true if the component name is valid
+        static bool validName(const std::string& compName);
+
         // Returns the component array from the component's type
         // Creates a new array if it doesn't exist
         template <typename T>

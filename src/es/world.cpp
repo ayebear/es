@@ -38,9 +38,19 @@ Entity World::get(ID id)
     return {core, id};
 }
 
+void World::clear()
+{
+    core.clear();
+}
+
 World::operator Core&()
 {
     return core;
+}
+
+bool World::validName(const std::string& compName)
+{
+    return ComponentPool::validName(compName);
 }
 
 }

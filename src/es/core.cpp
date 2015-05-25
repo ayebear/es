@@ -46,6 +46,13 @@ void Core::remove(ID id)
     }
 }
 
+void Core::clear()
+{
+    entities.clear();
+    entityNames.clear();
+    components.reset();
+}
+
 void Core::setName(ID id, const std::string& name)
 {
     if (isValid(id))

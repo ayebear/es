@@ -31,12 +31,12 @@ struct Position: public es::Component
     Position() {}
     Position(float x, float y): x{x}, y{y} {}
 
-    void fromString(const std::string& str)
+    void load(const std::string& str)
     {
         es::unpack(str, x, y);
     }
 
-    std::string toString() const
+    std::string save() const
     {
         return es::pack(x, y);
     }
@@ -50,12 +50,12 @@ struct Velocity: public es::Component
     Velocity() {}
     Velocity(float x, float y): x{x}, y{y} {}
 
-    void fromString(const std::string& str)
+    void load(const std::string& str)
     {
         es::unpack(str, x, y);
     }
 
-    std::string toString() const
+    std::string save() const
     {
         return es::pack(x, y);
     }

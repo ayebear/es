@@ -5,8 +5,6 @@
 #define ES_COMPONENT_H
 
 #include <string>
-#include <iostream>
-#include <typeinfo>
 
 namespace es
 {
@@ -14,32 +12,37 @@ namespace es
 /*
 Base component class. All components must inherit from this.
 Note: CRTP is not used.
+Overridable methods:
+    save()
+    load()
 */
 struct Component
 {
     Component() {}
     virtual ~Component() {}
 
-    virtual std::string toString() const
+    // Serializes the component to a string
+    virtual std::string save() const
     {
-        return "";
+        return {};
     };
 
-    virtual void fromString(const std::string& str) {};
+    // Deserializes a string, and updates the component
+    virtual void load(const std::string& str) {};
 
     void operator=(const std::string& str)
     {
-        fromString(str);
+        load(str);
     };
 
     void operator=(const char* str)
     {
-        fromString(str);
+        load(str);
     };
 
     operator std::string() const
     {
-        return toString();
+        return save();
     }
 };
 

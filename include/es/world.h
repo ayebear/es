@@ -51,6 +51,12 @@ class World
         Entity get(ID id);
 
 
+        // Remove entities ===================================================
+
+        // Removes all entities
+        void clear();
+
+
         // Query entities ====================================================
 
         // EntityList query(const std::string& compName);
@@ -67,7 +73,12 @@ class World
         // Might need to add getElements() to packed array for this to work.
 
 
+        // Miscellaneous =====================================================
+
         operator Core&();
+
+        // Returns true if the component name is valid
+        static bool validName(const std::string& compName);
 
         static World prototypes;
 

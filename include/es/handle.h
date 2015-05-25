@@ -12,18 +12,22 @@ template <class Container, class T>
 class Handle
 {
     public:
-        Handle(Container& array, ID id): array(array), id(id) {}
-        bool isValid() const { return array.isValid(id); }
-        operator bool() const { return isValid(); }
-        void erase() { array.erase(id); }
+        Handle(Container* array, ID id): array(array), id(id) {}
+
+        // Check if handle is valid
+        bool valid() const { return array && array->isValid(id); }
+        operator bool() const { return valid(); }
+
+        // Erase element that handle is pointing to
+        void erase() { array->erase(id); }
 
         // Dereference handle
-        T& access() { return array[id]; }
-        T* operator-> () { return &array[id]; }
-        T& operator* () { return array[id]; }
+        T& access() { return (*array)[id]; }
+        T* operator-> () { return &((*array)[id]); }
+        T& operator* () { return (*array)[id]; }
 
     private:
-        Container& array;
+        Container* array;
         ID id;
 };
 
