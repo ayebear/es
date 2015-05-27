@@ -6,27 +6,17 @@
 
 #include "es/componentpool.h"
 
-#define esRegister(compName) static es::RegisterName<compName> esCompReg_##compName(#compName);
-
 namespace es
 {
 
-// Creating an instance of this will register the specified component type and name
-template <class T>
-struct RegisterName
-{
-    RegisterName(const char* name)
-    {
-        ComponentPool::registerComponent<T>(name);
-    }
-};
-
+// Registers a single component type
 template<typename T>
 void registerComponents()
 {
 	ComponentPool::registerComponent<T>(T::name);
 }
 
+// Registers multiple component types
 template<typename A, typename B, typename... Args>
 void registerComponents()
 {
