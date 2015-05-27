@@ -8,6 +8,7 @@
 #include <cassert>
 #include "es/packedarray.h"
 #include "es/componentpool.h"
+#include "es/componentsetup.h"
 #include "es/serialize.h"
 #include "es/world.h"
 
@@ -27,7 +28,7 @@ double getElapsedTime(const auto& start)
 
 void runTests()
 {
-    es::registerComponents<Position, Velocity>();
+    es::registerComponents<Position, Velocity, Sprite>();
     std::cout << "Running all tests...\n";
     packedArrayTests();
     // packedArrayBenchmarks();
@@ -256,11 +257,14 @@ void entityTests()
     es::World world;
     auto ent = world.create();
 
+    // Assigning components
     ent.assign<Position>(55, 67).assign<Velocity>(97, 650);
 
     ent.assignFrom(Position(1, 2), Velocity(6, 2));
 
     ent << Position(100, 200) << Velocity(150, 300);
+
+    ent.assign<Sprite>("test.png");
 
     auto pos = ent.getPtr<Position>();
     assert(pos && pos->x > 99.0f && pos->x < 101.0f);
@@ -281,7 +285,7 @@ void entityTests()
     assert(!ent.has("Position", "Velocity", "Unknown"));
 
     // Removing components
-    assert(ent.numComponents() == 2);
+    assert(ent.numComponents() == 3);
     ent.removeAll();
     assert(ent.numComponents() == 0);
 
@@ -407,7 +411,11 @@ void worldTests()
 
 void prototypeTests()
 {
-
+    es::World world;
+    auto ent = world.create("cool");
+    ent << "Position 123 789" << Velocity(333, 444);
+    assert(ent["Position"].save() == "123 789");
+    assert(ent["Velocity"].save() == "333 444");
 }
 
 void eventTests()

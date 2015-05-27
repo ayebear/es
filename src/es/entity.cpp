@@ -12,6 +12,11 @@ Entity& Entity::operator<<(const std::string& data)
     return deserialize(data);
 }
 
+Entity& Entity::operator<<(const char* data)
+{
+    return deserialize(data);
+}
+
 Handle<BaseComponentArray, Component> Entity::get(const std::string& name)
 {
     return {core.components[name], getCompId(name)};
@@ -139,11 +144,24 @@ std::vector<std::string> Entity::serialize() const
 
 Entity& Entity::deserialize(const std::string& data)
 {
+    // To to find and split at the first space
+    auto separator = data.find(' ');
+    if (separator == std::string::npos)
+        assignFromString(data, "");
+    else if (separator > 0 && separator + 1 < data.size())
+    {
+        // Extract the component's name and data
+        auto compName = data.substr(0, separator);
+        auto compData = data.substr(separator + 1);
+        assignFromString(compName, compData);
+    }
     return *this;
 }
 
 Entity& Entity::deserialize(const std::vector<std::string>& componentStrings)
 {
+    for (const auto& str: componentStrings)
+        deserialize(str);
     return *this;
 }
 
@@ -200,6 +218,13 @@ void Entity::removeComp(const std::type_index& typeIdx)
         core.components[typeIdx]->erase(compId);
         core.entities[id].compSet.erase(typeIdx);
     }
+}
+
+void Entity::assignFromString(const std::string& compName, const std::string& compData)
+{
+    auto comp = at(compName);
+    if (comp)
+        comp->load(compData);
 }
 
 }

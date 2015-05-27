@@ -5,7 +5,6 @@
 #define ES_TESTS_H
 
 #include "es/component.h"
-#include "es/componentsetup.h"
 #include "es/serialize.h"
 
 namespace esTests
@@ -62,6 +61,26 @@ struct Velocity: public es::Component
     std::string save() const
     {
         return es::pack(x, y);
+    }
+};
+
+struct Sprite: public es::Component
+{
+    static constexpr auto name = "Sprite";
+
+    std::string filename;
+
+    Sprite() {}
+    Sprite(const std::string& filename): filename(filename) {}
+
+    void load(const std::string& str)
+    {
+        filename = str;
+    }
+
+    std::string save() const
+    {
+        return filename;
     }
 };
 

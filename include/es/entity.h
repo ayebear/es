@@ -39,6 +39,7 @@ class Entity
 
         // Deserializes component name and data
         Entity& operator<<(const std::string& data);
+        Entity& operator<<(const char* data);
 
 
         // Accessing components (No automatic creation) ======================
@@ -192,6 +193,9 @@ class Entity
 
         // For ending recursion
         void assignFrom() {}
+
+        // For safe deserialization
+        void assignFromString(const std::string& compName, const std::string& compData);
 
         Core& core;
         ID id;
