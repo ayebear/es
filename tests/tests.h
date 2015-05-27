@@ -25,6 +25,8 @@ void systemTests();
 
 struct Position: public es::Component
 {
+    static constexpr auto name = "Position";
+
     float x {0.0f};
     float y {0.0f};
 
@@ -44,6 +46,8 @@ struct Position: public es::Component
 
 struct Velocity: public es::Component
 {
+    static constexpr auto name = "Velocity";
+
     float x {0.0f};
     float y {0.0f};
 
@@ -60,9 +64,6 @@ struct Velocity: public es::Component
         return es::pack(x, y);
     }
 };
-
-esRegister(Position);
-esRegister(Velocity);
 
 }
 

@@ -10,7 +10,7 @@ set (ES_SOURCE
 	#${CMAKE_CURRENT_SOURCE_DIR}/src/es/entityprototypeloader.cpp
 )
 
-set (ES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.cpp)
+set (ES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests2.cpp)
 
 add_definitions ("-Wall -std=c++14 -O3")
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include")

@@ -13,7 +13,7 @@ namespace es
 /*
 Internal functions for packing/unpacking using streams.
 */
-void packStream(std::ostringstream& stream) {}
+inline void packStream(std::ostringstream& stream) {}
 
 template <typename T, typename... Args>
 void packStream(std::ostringstream& stream, const T& val, Args&&... args)
@@ -24,7 +24,7 @@ void packStream(std::ostringstream& stream, const T& val, Args&&... args)
     packStream(stream, args...);
 }
 
-unsigned unpackStream(std::istringstream& stream)
+inline unsigned unpackStream(std::istringstream& stream)
 {
     return 0;
 }

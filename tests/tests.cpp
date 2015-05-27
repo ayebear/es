@@ -27,6 +27,7 @@ double getElapsedTime(const auto& start)
 
 void runTests()
 {
+    es::registerComponents<Position, Velocity>();
     std::cout << "Running all tests...\n";
     packedArrayTests();
     // packedArrayBenchmarks();
@@ -209,6 +210,8 @@ void componentTests()
     Position pos;
     pos.load("22.1 97.3");
     assert(pos.save() == "22.1 97.3");
+    std::string posStr = pos;
+    assert(posStr == "22.1 97.3");
 
     std::cout << "Component tests passed.\n";
 }

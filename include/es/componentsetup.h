@@ -21,6 +21,19 @@ struct RegisterName
     }
 };
 
+template<typename T>
+void registerComponents()
+{
+	ComponentPool::registerComponent<T>(T::name);
+}
+
+template<typename A, typename B, typename... Args>
+void registerComponents()
+{
+	registerComponents<A>();
+	registerComponents<B, Args...>();
+}
+
 }
 
 #endif
