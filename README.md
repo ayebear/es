@@ -2,8 +2,6 @@
 
 An easy to use, high performance, C++14 "Entity Component System" library.
 
-Note: Some of these features are not completed yet.
-
 
 ## Purpose
 
@@ -23,7 +21,8 @@ This library was inspired by the following amazing libraries:
 
 No other entity system currently has **all** of these features:
 
-* Can access/update components with strings
+* Can use components with their string names
+  * Accessing/updating/removing/checking components by name is supported
   * Allows for loading from files
   * Allows for network synchronization
 * Allows for a mix of OOP and DOD
@@ -33,10 +32,10 @@ No other entity system currently has **all** of these features:
   * Components are stored in contiguous arrays, one for each type
 * Heavily uses the "assign" idiom
   * Accessing or setting components will automatically add them first if they don't already exist
-  * Same for entities in the world
+  * Same for getting entities from the world
 * Supports transferring entities between worlds
 * Simplified systems for updating components
-  * Built-in, cache efficient filters reduce boilerplate code
+  * Built-in queries reduce boilerplate code
 * Improved prototypes
   * Less work to define, don't need sets
   * Supports inheritance to reduce redundancy
@@ -56,8 +55,6 @@ No other entity system currently has **all** of these features:
 
 
 ## Example Usage
-
-Note: Some of these features aren't fully designed/implemented yet, and may change in the future.
 
 ### Entities
 
@@ -86,8 +83,9 @@ Create an entity from a prototype, which can also be named:
 auto ent = world.copy("Type");
 auto ent2 = world.copy("Type", "name");
 
-// Those are basically just syntactic sugar for this:
-auto ent3 = World::prototypes["Type"].clone(world, "name");
+// Those are just syntactic sugar for this:
+auto ent3 = World::prototypes.get("Type").clone(world, "name");
+// (The prototypes are stored in a static World instance)
 ```
 
 ##### Access entities:
@@ -115,10 +113,15 @@ if (ent.valid())
 Bind a name to an existing entity:
 
 ```cpp
-ent.bindName("name");
+ent.setName("name");
 ```
 
 Then, you can access this entity from the world by its name, instead of its ID.
+
+You can also get the name later on:
+```cpp
+auto name = ent.getName();
+```
 
 ##### Copy entities:
 
@@ -162,82 +165,106 @@ After this, the entity is no longer valid and should not be used.
 
 ### Components
 
-##### Define components:
+#### Defining components
 
 ```cpp
+#include "es/component.h"
+#include "es/serialize.h"
+
 struct Position: public es::Component
 {
+    static constexpr auto name = "Position";
+
     float x {0.0f};
     float y {0.0f};
 
+    Position() {}
     Position(float x, float y): x{x}, y{y} {}
 
-    void fromString(const std::string& str)
+    void load(const std::string& str)
     {
         es::unpack(str, x, y);
     }
 
-    std::string toString() const
+    std::string save() const
     {
         return es::pack(x, y);
     }
 };
+```
 
-// Binds the name and type of the component
-esRegister(Position);
+#### Registering components
+
+After your components are defined, you must register their types before using them. This internally sets up arrays, component names, and type indexes.
+
+This should go in your initialization code, **before** using any entities with your components. It only needs to be called once, since the component names and types are static.
+
+```cpp
+#include "es/componentsetup.h"
+
+es::registerComponents<Position, Velocity, Sprite, Size, AABB, Gravity>();
+```
+
+#### Using components with entities
+
+##### Create/update components:
+
+If the component already exists, these will set the component, otherwise a new component will be created.
+
+```cpp
+// These can be chained like std::cout
+ent << Position(10, 20);
+
+// The efficient argument forwarding way
+ent.assign<Position>(30, 40);
+
+// Similar to operator<<
+ent.assignFrom(Position(50, 60));
 ```
 
 ##### Accessing components:
 
-By default, accessing components will return a special es::ComponentHandle object, which is based on es::PackedArray::Handle. This allows you to store the handles for long periods of time, and they still work properly even if the array reallocates, or if the components themselves are moved in memory.
+By default, accessing components will return a special Handle object. This allows you to store the handles for long periods of time, and they still work properly even if the array reallocates, or if the components themselves are moved in memory.
 
 Access components (will be created if they don't exist):
 
 ```cpp
-// The regular way
-auto comp = ent.at<Component>();
+// Get component handle of specified type
+auto compHandle = ent.at<Position>();
 
-// These return base component handles, since the type is not known
-auto baseComp = ent["Component"];
-auto baseComp2 = ent.at("Component");
+// Get base component handle
+auto baseCompHandle = ent.at("Position");
 
-// Can chain calls
-auto baseComp3 = world["someEntity"]["Component"];
+// Get component reference of specified type
+auto& comp = ent.access<Position>();
+
+// Get direct base component references
+auto& baseComp = ent["Position"];
+auto& baseComp2 = ent.access("Position");
+
+// Can chain calls from the world
+world["pos1"]["Position"] = "50 80";
 ```
 
 Access components (won't create):
 
 ```cpp
-auto baseComp = ent.get("Component");
-auto comp = ent.get<Component>();
+auto baseComp = ent.get("Position");
+auto comp = ent.get<Position>();
 
-Component comp;
-ent >> comp;
-```
-
-Access raw components directly:
-
-```cpp
-if (comp)
-{
-    auto& rawComp = comp.access();
-    rawComp.x = 5;
-}
+Position pos;
+ent >> pos;
 ```
 
 Use the handle to access members in a component:
 
 ```cpp
-comp->x = 5;
-(*comp).x = 5;
-```
-
-
-##### Update/create components:
-
-```cpp
-ent << Component(params); // These can be chained like cout
-ent.assign<Component>(params); // The efficient argument forwarding way
+if (comp)
+{
+    comp->x = 5;
+    (*comp).x = 5;
+    comp.access().x = 5;
+}
 ```
 
 ##### Deserialize (all are equivalent):
