@@ -1,0 +1,4 @@
+[submodule "lib/ConfigFile"]
+	path = lib/ConfigFile
+	url = https://github.com/ayebear/ConfigFile.git
+	branch = master
