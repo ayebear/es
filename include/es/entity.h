@@ -78,6 +78,9 @@ class Entity
         template <typename T>
         T& access();
 
+        // Returns a base component pointer by component name
+        Component* accessPtr(const std::string& name);
+
         // Returns a base component reference by component name
         Component& access(const std::string& name);
         Component& operator[](const std::string& name);
@@ -167,10 +170,13 @@ class Entity
         // Serializes all components into a vector of strings (with component names)
         std::vector<std::string> serialize() const;
 
-        // Deserializes component name and data
+        // Safely deserializes component name and data
+        Entity& deserialize(const std::string& compName, const std::string& compData);
+
+        // Deserializes component name and data (splits it)
         Entity& deserialize(const std::string& data);
 
-        // Deserializes component name and data
+        // Deserializes component name and data (splits each one)
         Entity& deserialize(const std::vector<std::string>& componentStrings);
 
     private:
@@ -193,9 +199,6 @@ class Entity
 
         // For ending recursion
         void assignFrom() {}
-
-        // For safe deserialization
-        void assignFromString(const std::string& compName, const std::string& compData);
 
         Core& core;
         ID id;

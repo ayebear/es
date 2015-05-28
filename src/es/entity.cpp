@@ -24,9 +24,12 @@ Handle<BaseComponentArray, Component> Entity::get(const std::string& name)
 
 Component* Entity::getPtr(const std::string& name)
 {
-    auto compArray = core.components[name];
-    if (compArray)
-        return compArray->get(getCompId(name));
+    if (valid())
+    {
+        auto compArray = core.components[name];
+        if (compArray)
+            return compArray->get(getCompId(name));
+    }
     return nullptr;
 }
 
@@ -35,10 +38,19 @@ Handle<BaseComponentArray, Component> Entity::at(const std::string& name)
     return {core.components[name], atCompId(name)};
 }
 
+Component* Entity::accessPtr(const std::string& name)
+{
+    auto compArray = core.components[name];
+    if (compArray)
+        return compArray->get(atCompId(name));
+    return nullptr;
+}
+
 Component& Entity::access(const std::string& name)
 {
-    ID compId = atCompId(name);
-    return *core.components[name]->get(compId);
+    auto comp = accessPtr(name);
+    assert(comp);
+    return *comp;
 }
 
 Component& Entity::operator[](const std::string& name)
@@ -75,11 +87,7 @@ void Entity::removeAll()
         // Go through component set, and remove components by ID
         auto& compSet = core.entities[id].compSet;
         for (const auto& comp: compSet)
-        {
-            auto compArray = core.components[comp.first];
-            assert(compArray); // Note: Will remove after verifying this always works
-            compArray->erase(comp.second);
-        }
+            core.components[comp.first]->erase(comp.second);
         compSet.clear();
     }
 }
@@ -139,21 +147,46 @@ Entity::operator bool() const
 
 std::vector<std::string> Entity::serialize() const
 {
-    return {};
+    std::vector<std::string> comps;
+    for (const auto& comp: core.entities[id].compSet)
+    {
+        // Get the component's name by type index
+        auto compName = core.components.getName(comp.first);
+        if (!compName.empty())
+        {
+            // Serialize the component with the name and data
+            auto compData = (*core.components[comp.first])[comp.second].save();
+            if (!compData.empty())
+                compName += ' ' + compData;
+            comps.push_back(compName);
+        }
+    }
+    return comps;
+}
+
+Entity& Entity::deserialize(const std::string& compName, const std::string& compData)
+{
+    auto comp = at(compName);
+    if (comp)
+        comp->load(compData);
+    return *this;
 }
 
 Entity& Entity::deserialize(const std::string& data)
 {
-    // To to find and split at the first space
-    auto separator = data.find(' ');
-    if (separator == std::string::npos)
-        assignFromString(data, "");
-    else if (separator > 0 && separator + 1 < data.size())
+    if (valid())
     {
-        // Extract the component's name and data
-        auto compName = data.substr(0, separator);
-        auto compData = data.substr(separator + 1);
-        assignFromString(compName, compData);
+        // To to find and split at the first space
+        auto separator = data.find(' ');
+        if (separator == std::string::npos)
+            deserialize(data, "");
+        else if (separator > 0 && separator + 1 < data.size())
+        {
+            // Extract the component's name and data
+            auto compName = data.substr(0, separator);
+            auto compData = data.substr(separator + 1);
+            deserialize(compName, compData);
+        }
     }
     return *this;
 }
@@ -218,13 +251,6 @@ void Entity::removeComp(const std::type_index& typeIdx)
         core.components[typeIdx]->erase(compId);
         core.entities[id].compSet.erase(typeIdx);
     }
-}
-
-void Entity::assignFromString(const std::string& compName, const std::string& compData)
-{
-    auto comp = at(compName);
-    if (comp)
-        comp->load(compData);
 }
 
 }

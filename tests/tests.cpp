@@ -6,6 +6,7 @@
 #include <chrono>
 #include <deque>
 #include <cassert>
+#include <algorithm>
 #include "es/packedarray.h"
 #include "es/componentpool.h"
 #include "es/componentsetup.h"
@@ -208,11 +209,27 @@ void serializationTests()
 
 void componentTests()
 {
-    Position pos;
-    pos.load("22.1 97.3");
-    assert(pos.save() == "22.1 97.3");
-    std::string posStr = pos;
+    Position posComp;
+    posComp.load("22.1 97.3");
+    assert(posComp.save() == "22.1 97.3");
+    std::string posStr = posComp;
     assert(posStr == "22.1 97.3");
+    es::Component& baseComp = posComp;
+    posStr = baseComp;
+    assert(posStr == "22.1 97.3");
+
+    // From the name querying loop in the readme
+    es::World world;
+    auto ent = world.create().assign<Position>(12, 15).assign<Velocity>(1, 2);
+    auto pos = ent.get("Position");
+    auto vel = ent.get("Velocity");
+    float x1, y1, x2, y2;
+    es::unpack(*pos, x1, y1);
+    es::unpack(*vel, x2, y2);
+    x1 += x2;
+    y1 += y2;
+    *pos = es::pack(x1, y1);
+    assert(pos->save() == "13 17");
 
     std::cout << "Component tests passed.\n";
 }
@@ -411,11 +428,25 @@ void worldTests()
 
 void prototypeTests()
 {
+    // Deserialization tests
     es::World world;
     auto ent = world.create("cool");
     ent << "Position 123 789" << Velocity(333, 444);
     assert(ent["Position"].save() == "123 789");
     assert(ent["Velocity"].save() == "333 444");
+    ent << "Position";
+    assert(ent["Position"].save() == "0 0");
+    ent.deserialize("Position", "678 321");
+    assert(ent["Position"].save() == "678 321");
+
+    // Serialization tests
+    auto comps = ent.serialize();
+    std::sort(comps.begin(), comps.end());
+    assert(comps.size() == 2);
+    assert(comps[0] == "Position 678 321");
+    assert(comps[1] == "Velocity 333 444");
+    ent << "Sprite";
+    assert(ent.serialize().size() == 3);
 }
 
 void eventTests()

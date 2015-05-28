@@ -34,6 +34,7 @@ struct Position: public es::Component
 
     void load(const std::string& str)
     {
+        x = 0, y = 0;
         es::unpack(str, x, y);
     }
 
@@ -55,6 +56,7 @@ struct Velocity: public es::Component
 
     void load(const std::string& str)
     {
+        x = 0, y = 0;
         es::unpack(str, x, y);
     }
 
