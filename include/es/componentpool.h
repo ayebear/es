@@ -141,6 +141,21 @@ ComponentArray<T>& ComponentPool::get()
     return *static_cast<ComponentArray<T>*>(found->second.get());
 }
 
+// Registers a single component type
+template<typename T>
+void registerComponents()
+{
+    ComponentPool::registerComponent<T>(T::name);
+}
+
+// Registers multiple component types
+template<typename A, typename B, typename... Args>
+void registerComponents()
+{
+    registerComponents<A>();
+    registerComponents<B, Args...>();
+}
+
 }
 
 #endif

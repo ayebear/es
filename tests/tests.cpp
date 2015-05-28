@@ -9,7 +9,6 @@
 #include <algorithm>
 #include "es/packedarray.h"
 #include "es/componentpool.h"
-#include "es/componentsetup.h"
 #include "es/serialize.h"
 #include "es/world.h"
 #include "es/entityprototypeloader.h"

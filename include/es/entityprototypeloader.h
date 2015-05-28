@@ -17,8 +17,11 @@ namespace es
 bool loadPrototypes(const std::string& configFilename);
 
 /*
-This is an alternate version of the ObjectPrototypeLoader class from OCS.
-It uses cfg::File formatted files instead, to keep things consistent with the rest of the project.
+Loads pre-configured entities with components from a ConfigFile.
+Entities can be made from these prototypes, using the name.
+Prototypes are part of the static World instance in es::World::prototypes.
+    This means they only need to be loaded once.
+
 Inheritance:
     You can have an entity "inherit" from another entity, which means all of the
         parent's components will be used in addition to the child's components.
@@ -28,26 +31,26 @@ Inheritance:
         The order the parents are listed is the order they are loaded.
 
 Example file:
+    [SomeEntity]
+    Position = "200 200"
+    Velocity = "50 50"
+    Size = "128 128"
 
-[SomeEntity]
-Position = "200 200"
-Velocity = "50 50"
-Size = "128 128"
+    [AnotherEntity]
+    SomeComponent = "parameter1 parameter2 parameter3"
+    AnotherComponent = ""
 
-[AnotherEntity]
-SomeComponent = "parameter1 parameter2 parameter3"
-AnotherComponent = ""
+    [SubEntity: SomeEntity, AnotherEntity]
+    Description = "An entity with all of the components of SomeEntity and AnotherEntity"
 
-[SubEntity: SomeEntity, AnotherEntity]
-Description = "An entity with all of the components of SomeEntity and AnotherEntity"
-
-[SubEntity2: SomeEntity]
-Size = "64 64"
+    [SubEntity2: SomeEntity]
+    Size = "64 64"
 
 Example usage:
+    es::loadPrototypes("entities.cfg");
 
-es::loadPrototypes("entities.cfg");
-
+    es::World world;
+    auto ent = world.copy("SomeEntity");
 */
 class EntityPrototypeLoader
 {

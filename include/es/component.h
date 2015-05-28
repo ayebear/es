@@ -11,10 +11,6 @@ namespace es
 
 /*
 Base component class. All components must inherit from this.
-Note: CRTP is not used.
-Overridable methods:
-    save()
-    load()
 */
 struct Component
 {

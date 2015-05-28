@@ -235,7 +235,7 @@ After your components are defined, you must register their types before using th
 This should go in your initialization code, **before** using any entities with your components. It only needs to be called once, since the component names and types are static.
 
 ```cpp
-#include "es/componentsetup.h"
+#include "es/componentpool.h"
 
 es::registerComponents<Position, Velocity, Sprite, Size, AABB, Gravity>();
 ```
