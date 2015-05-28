@@ -163,6 +163,41 @@ ent.destroy();
 After this, the entity is no longer valid and should not be used.
 
 
+##### Query entities:
+
+Note: Both components and entities can be created/modified/deleted inside of these loops without issue. If you need to do this, be aware that deleting an entity may not stop it from being processed in the loop. Make sure to check that the entity and all components are valid before using them, if you decide to delete anything.
+
+Any new entities that are created inside of the loop are guaranteed not to be processed, until the next call to query().
+
+Iterate through the entities with all of the specified component types:
+
+```cpp
+for (auto ent: world.query<Position, Velocity, Sprite>())
+{
+    auto pos = ent.get<Position>();
+    auto vel = ent.get<Velocity>();
+    pos->x += vel->x;
+    pos->y += vel->y;
+}
+```
+
+Iterate through the entities with all of the specified component names:
+
+```cpp
+for (auto ent: world.query("Position", "Velocity", "Sprite"))
+{
+    auto pos = ent.get("Position");
+    auto vel = ent.get("Velocity");
+    float x1, y1, x2, y2;
+    es::unpack(*pos, x1, y1);
+    es::unpack(*vel, x2, y2);
+    x1 += x2;
+    y1 += y2;
+    *pos = es::pack(x1, y1);
+}
+```
+
+
 ### Components
 
 #### Defining components
@@ -267,35 +302,35 @@ if (comp)
 }
 ```
 
-##### Deserialize (all are equivalent):
+##### Deserialize:
 
 ```cpp
+// With component name
 ent << "Position 100 500";
+ent.deserialize("Position 100 500")
+
+// Separate component name
 ent["Position"] = "100 500";
-ent.at<Position>() = "100 500";
+ent.at<Position>().load("100 500");
 ```
 
 ##### Serialize:
-Note: These utilize the implicit string cast, there is also a toString()
 
 ```cpp
+// Get a string of a component
+auto str = ent["Position"].save();
+
+// Implict string cast
 std::string posStr;
 posStr = ent.at<Position>();
 posStr = ent["Position"];
 ```
 
-##### Serialize (may remove these):
-
-```cpp
-std::string posStr;
-ent.at<Position>() >> posStr;
-ent["Position"] >> posStr;
-```
-
 ##### Serialize all components:
 
 ```cpp
-auto comps = ent.serialize(); // Returns a vector of strings
+// Returns a vector of strings
+auto comps = ent.serialize();
 ```
 
 
