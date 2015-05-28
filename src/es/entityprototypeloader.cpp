@@ -2,18 +2,18 @@
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
 #include "es/entityprototypeloader.h"
+#include "es/world.h"
 
 namespace es
 {
 
-bool loadPrototypes(ocs::ObjectManager& objects, const std::string& configFilename)
+bool loadPrototypes(const std::string& configFilename)
 {
-    EntityPrototypeLoader loader(objects, configFilename);
+    EntityPrototypeLoader loader(configFilename);
     return loader.load();
 }
 
-EntityPrototypeLoader::EntityPrototypeLoader(ocs::ObjectManager& objects, const std::string& configFilename):
-    objects(objects),
+EntityPrototypeLoader::EntityPrototypeLoader(const std::string& configFilename):
     config(configFilename)
 {
 }
@@ -101,7 +101,7 @@ void EntityPrototypeLoader::loadComponents(const std::string& entityName, const 
 {
     // Load each component from a string in the section
     for (auto& option: section)
-        objects.addComponentToPrototypeFromString(entityName, option.first, option.second.toString());
+        World::prototypes[entityName].deserialize(option.first, option.second.toString());
 }
 
 }

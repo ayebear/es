@@ -12,6 +12,7 @@
 #include "es/componentsetup.h"
 #include "es/serialize.h"
 #include "es/world.h"
+#include "es/entityprototypeloader.h"
 
 int main()
 {
@@ -29,7 +30,7 @@ double getElapsedTime(const auto& start)
 
 void runTests()
 {
-    es::registerComponents<Position, Velocity, Sprite>();
+    es::registerComponents<Position, Velocity, Size, Sprite>();
     std::cout << "Running all tests...\n";
     packedArrayTests();
     // packedArrayBenchmarks();
@@ -447,6 +448,22 @@ void prototypeTests()
     assert(comps[1] == "Velocity 333 444");
     ent << "Sprite";
     assert(ent.serialize().size() == 3);
+
+    // Load prototypes
+    bool status = es::loadPrototypes("entities.cfg");
+    assert(status);
+
+    // Create entities from prototypes
+    auto box = world.copy("Box");
+    assert(box.numComponents() == 3);
+    assert(box["Size"].save() == "64 64");
+    assert(box.getName().empty());
+
+    auto player = world.copy("Player", "player");
+    assert(player.numComponents() == 2);
+    assert(player["Position"].save() == "50 10");
+    assert(player.getName() == "player");
+    assert(player.getId() == world["player"].getId());
 }
 
 void eventTests()

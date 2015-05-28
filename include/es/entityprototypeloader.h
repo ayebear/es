@@ -4,15 +4,17 @@
 #ifndef ES_ENTITYPROTOTYPELOADER_H
 #define ES_ENTITYPROTOTYPELOADER_H
 
-#include "OCS/Objects/ObjectManager.hpp"
-#include "configfile.h"
+#include <string>
 #include <vector>
+#include <map>
+#include <unordered_set>
+#include "configfile.h"
 
 namespace es
 {
 
 // Loads all prototypes from a config file (returns true if successful)
-bool loadPrototypes(ocs::ObjectManager& objects, const std::string& configFilename);
+bool loadPrototypes(const std::string& configFilename);
 
 /*
 This is an alternate version of the ObjectPrototypeLoader class from OCS.
@@ -50,7 +52,7 @@ es::loadPrototypes("entities.cfg");
 class EntityPrototypeLoader
 {
     public:
-        EntityPrototypeLoader(ocs::ObjectManager& objects, const std::string& configFilename);
+        EntityPrototypeLoader(const std::string& configFilename);
         bool load();
 
     private:
@@ -76,12 +78,11 @@ class EntityPrototypeLoader
             cfg::File::Section componentData;
         };
 
-        ocs::ObjectManager& objects;
         cfg::File config;
         std::map<std::string, ParentInfo> entToComp;
 
         // Temporary for each entity
-        std::set<std::string> visitedParents;
+        std::unordered_set<std::string> visitedParents;
 };
 
 }

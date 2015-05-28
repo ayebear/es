@@ -66,6 +66,28 @@ struct Velocity: public es::Component
     }
 };
 
+struct Size: public es::Component
+{
+    static constexpr auto name = "Size";
+
+    float x {0.0f};
+    float y {0.0f};
+
+    Size() {}
+    Size(float x, float y): x{x}, y{y} {}
+
+    void load(const std::string& str)
+    {
+        x = 0, y = 0;
+        es::unpack(str, x, y);
+    }
+
+    std::string save() const
+    {
+        return es::pack(x, y);
+    }
+};
+
 struct Sprite: public es::Component
 {
     static constexpr auto name = "Sprite";
