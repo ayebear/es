@@ -2,6 +2,19 @@
 
 An easy to use, high performance, C++14 "Entity Component System" library.
 
+### Table Of Contents
+
+* [Purpose](#purpose)
+* [Important Features](#important-features)
+* [Terms Explained](#terms-explained)
+* [Build Steps](#build-steps)
+* [Example Usage](#example-usage)
+  * [Entities](#entities)
+  * [Components](#components)
+  * [Systems](#systems)
+  * [Events](#events)
+  * [Prototypes](#prototypes)
+* [Author](#author)
 
 ## Purpose
 
@@ -52,6 +65,27 @@ No other entity system currently has **all** of these features:
   * **User defined:** No logic should be here.
 * Prototype: A preloaded set of components for an entity.
   * **User defined:** You can create a file containing the prototype definitions.
+
+
+## Build Steps
+
+##### Checkout the repository and submodules:
+
+```
+git clone https://github.com/ayebear/es.git & cd es
+git submodule init
+git submodule update
+```
+
+##### Build the library:
+
+```
+mkdir build & cd build
+cmake ..
+make
+```
+
+At this point, you should have the files libes.so and libes_s.a, which you can dynamically or statically link to your project.
 
 
 ## Example Usage
