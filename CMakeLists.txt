@@ -10,7 +10,9 @@ set (ES_SOURCE
 	src/es/entityprototypeloader.cpp
 )
 
-set (ES_TESTS tests/tests.cpp tests/tests2.cpp)
+set (ES_TESTS
+	tests/tests.cpp
+	tests/tests2.cpp)
 
 add_subdirectory (lib/ConfigFile)
 add_definitions ("-Wall -std=c++14 -O3")

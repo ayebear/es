@@ -5,8 +5,8 @@
 #define ES_COMPONENTARRAY_H
 
 #include "es/component.h"
-#include "es/packedarray.h"
-#include "es/id.h"
+#include "es/internal/packedarray.h"
+#include "es/internal/id.h"
 #include <memory>
 
 namespace es

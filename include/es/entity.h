@@ -6,7 +6,7 @@
 
 #include "es/component.h"
 #include "es/componentpool.h"
-#include "es/core.h"
+#include "es/internal/core.h"
 
 namespace es
 {

@@ -7,9 +7,9 @@
 #include <cstdint>
 #include <vector>
 #include <limits>
-#include "id.h"
-#include "reversemap.h"
-#include "handle.h"
+#include "es/internal/id.h"
+#include "es/internal/reversemap.h"
+#include "es/internal/handle.h"
 
 namespace es
 {

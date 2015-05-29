@@ -4,11 +4,11 @@
 #ifndef ES_COMPONENTPOOL_H
 #define ES_COMPONENTPOOL_H
 
-#include "es/componentarray.h"
 #include <typeindex>
 #include <iostream>
 #include <unordered_set>
 #include <cassert>
+#include "es/internal/componentarray.h"
 
 namespace es
 {

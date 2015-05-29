@@ -4,7 +4,7 @@
 #ifndef ES_WORLD_H
 #define ES_WORLD_H
 
-#include "es/core.h"
+#include "es/internal/core.h"
 #include "es/entity.h"
 
 namespace es

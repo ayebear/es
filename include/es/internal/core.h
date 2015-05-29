@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 #include <typeindex>
-#include "es/packedarray.h"
+#include "es/internal/packedarray.h"
 #include "es/componentpool.h"
 
 namespace es
