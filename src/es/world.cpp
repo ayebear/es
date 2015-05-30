@@ -43,6 +43,14 @@ void World::clear()
     core.clear();
 }
 
+World::EntityList World::query()
+{
+    EntityList entities;
+    for (const auto& id: core.entities.getIndex())
+        entities.emplace_back(core, id.first);
+    return entities;
+}
+
 World::operator Core&()
 {
     return core;

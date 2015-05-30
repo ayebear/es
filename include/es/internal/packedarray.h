@@ -30,6 +30,7 @@ class PackedArray
     public:
 
         using Container = std::vector<T>;
+        using Index = ReverseMap<ID, size_t>;
 
         PackedArray() {}
 
@@ -166,6 +167,11 @@ class PackedArray
             return elements.cend();
         }
 
+        const Index::ValueMap& getIndex() const
+        {
+            return index.getValueMap();
+        }
+
     private:
 
         size_t swapErase(size_t pos)
@@ -190,7 +196,7 @@ class PackedArray
 
         ID nextId = 0;
         Container elements;
-        ReverseMap<ID, size_t> index;
+        Index index;
 };
 
 }

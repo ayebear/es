@@ -423,6 +423,53 @@ void worldTests()
     assert(clone3["Position"].save() == "90 95" && clone3["Velocity"].save() == "85 80");
     assert(clone4["Position"].save() == "90 95" && clone4["Velocity"].save() == "85 80");
 
+    world["queryTest"] << Position(10, 10) << Velocity(20, 20) << Sprite("test.png");
+
+    // Iterating through all entities
+    for (auto ent: world.query())
+    {
+        auto pos = ent.get<Position>();
+        auto vel = ent.get<Velocity>();
+        auto sprite = ent.get<Sprite>();
+        if (pos && vel && sprite)
+        {
+            pos->x = 1;
+            pos->y = 2;
+            vel->x = 3;
+            vel->y = 4;
+            sprite->filename = "sprite.png";
+            assert(pos->save() == "1 2");
+            assert(vel->save() == "3 4");
+            assert(sprite->save() == "sprite.png");
+        }
+    }
+
+    // Querying by type
+    for (auto ent: world.query<Position, Velocity, Sprite>())
+    {
+        auto pos = ent.get<Position>();
+        auto vel = ent.get<Velocity>();
+        pos->x += vel->x;
+        pos->y += vel->y;
+        assert(pos->save() == "4 6");
+        assert(vel->save() == "3 4");
+    }
+
+    // Querying by name
+    for (auto ent: world.query("Position", "Velocity", "Sprite"))
+    {
+        auto pos = ent.get("Position");
+        auto vel = ent.get("Velocity");
+        float x1, y1, x2, y2;
+        es::unpack(*pos, x1, y1);
+        es::unpack(*vel, x2, y2);
+        x1 += x2;
+        y1 += y2;
+        *pos = es::pack(x1, y1);
+        assert(pos->save() == "7 10");
+        assert(vel->save() == "3 4");
+    }
+
     std::cout << "World tests passed.\n";
 }
 

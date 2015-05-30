@@ -47,7 +47,17 @@ class ReverseMap
             return keys;
         }
 
+        const KeyMap& getKeyMap() const
+        {
+            return keys;
+        }
+
         ValueMap& getValueMap()
+        {
+            return values;
+        }
+
+        const ValueMap& getValueMap() const
         {
             return values;
         }

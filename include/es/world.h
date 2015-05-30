@@ -59,10 +59,18 @@ class World
 
         // Query entities ====================================================
 
-        // EntityList query(const std::string& compName);
+        using EntityList = std::vector<Entity>;
 
-        // TODO: Add EntityList struct
-        // TODO: Add variadic queries by name and type
+        // Returns all entities
+        EntityList query();
+
+        // Returns entities with specified component types
+        template <typename T, typename... Args>
+        EntityList query();
+
+        // Returns entities with specified component names
+        template <typename... Args>
+        EntityList query(const std::string& name, Args&&... args);
 
 
         // Iterate through all entities ======================================
@@ -70,7 +78,6 @@ class World
         // TODO: Add begin/end and const versions
             // This should iterate through the entities safely and return an
             // Entity handle each time.
-        // Might need to add getElements() to packed array for this to work.
 
 
         // Miscellaneous =====================================================
@@ -87,6 +94,32 @@ class World
         Core core;
 
 };
+
+template <typename T, typename... Args>
+World::EntityList World::query()
+{
+    EntityList entities;
+    for (const auto& id: core.entities.getIndex())
+    {
+        Entity ent {core, id.first};
+        if (ent.has<T, Args...>())
+            entities.push_back(ent);
+    }
+    return entities;
+}
+
+template <typename... Args>
+World::EntityList World::query(const std::string& name, Args&&... args)
+{
+    EntityList entities;
+    for (const auto& id: core.entities.getIndex())
+    {
+        Entity ent {core, id.first};
+        if (ent.has(name, args...))
+            entities.push_back(ent);
+    }
+    return entities;
+}
 
 }
 
