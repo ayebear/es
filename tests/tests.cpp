@@ -304,7 +304,7 @@ void entityTests()
 
     // Removing components
     assert(ent.total() == 3);
-    ent.removeAll();
+    ent.clear();
     assert(ent.total() == 0);
 
     ent << Position(100, 200) << Velocity(150, 300);
@@ -341,15 +341,15 @@ void entityTests()
     assert(ent.access("Position").save() == "10 50");
     assert(ent["Position"].save() == "10 50");
 
-    ent.removeAll();
-    ent.removeAll();
-    ent.removeAll();
+    ent.clear();
+    ent.clear();
+    ent.clear();
 
     ent.at("Position")->load("80 85");
     assert(ent["Position"].save() == "80 85");
     ent["Velocity"].load("98 99");
     assert(ent["Velocity"].save() == "98 99");
-    ent.removeAll();
+    ent.clear();
     auto hndl = ent.at<Position>();
     ent.access<Velocity>().x = 7;
     ent.access<Velocity>().y = 8;
@@ -358,17 +358,17 @@ void entityTests()
     assert(ent["Velocity"].save() == "7 8");
     std::string posString("Position");
     assert(ent[posString].save() == "5 6");
-    ent.removeAll();
+    ent.clear();
 
     ent << Position(900, 800);
     Position posComp;
     ent >> posComp;
     assert(posComp.x == 900 && posComp.y == 800);
-    ent.removeAll();
+    ent.clear();
     Position posComp2 {0, 0};
     ent >> posComp2;
     assert(posComp2.x == 0 && posComp2.y == 0);
-    ent.removeAll();
+    ent.clear();
 
     // Invalid accessing of components
     assert(ent.total() == 0);
@@ -383,9 +383,18 @@ void entityTests()
     assert(world.validName("Position"));
     assert(!world.validName("testing"));
 
-    // Iterating through names
-    for (const auto& name: ent.getNames())
-        std::cout << name << "\n";
+    // Getting all component names
+    ent.clear();
+    ent << Position(100, 100) << Sprite("testing.png");
+    auto names = ent.getNames();
+    assert(std::find(names.begin(), names.end(), "Sprite") != names.end());
+    assert(std::find(names.begin(), names.end(), "Position") != names.end());
+    assert(std::find(names.begin(), names.end(), "Velocity") == names.end());
+
+    // Iterating though component names
+    for (const auto& name: names)
+        ent.remove(name);
+    assert(ent.empty());
 
     std::cout << "Entity tests passed.\n";
 }

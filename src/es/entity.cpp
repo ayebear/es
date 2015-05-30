@@ -88,12 +88,17 @@ size_t Entity::total() const
     return 0;
 }
 
+bool Entity::empty() const
+{
+    return total() == 0;
+}
+
 void Entity::remove(const std::string& name)
 {
     removeComp(core.components.getTypeIndex(name));
 }
 
-void Entity::removeAll()
+void Entity::clear()
 {
     if (valid())
     {
@@ -143,7 +148,7 @@ void Entity::invalidate()
 
 void Entity::destroy()
 {
-    removeAll();
+    clear();
     core.remove(id);
     invalidate();
 }

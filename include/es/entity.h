@@ -110,6 +110,9 @@ class Entity
         // Returns number of component instances
         size_t total() const;
 
+        // Returns true if there are no components
+        bool empty() const;
+
 
         // Removing components ===============================================
 
@@ -129,7 +132,7 @@ class Entity
         void remove(const std::string& name, const std::string& name2, Args&&... args);
 
         // Removes all components
-        void removeAll();
+        void clear();
 
 
         // Entity copying ====================================================
