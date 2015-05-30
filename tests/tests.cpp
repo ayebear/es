@@ -38,6 +38,7 @@ void runTests()
     componentPoolTests();
     entityTests();
     worldTests();
+    worldBenchmarks();
     prototypeTests();
     eventTests();
     systemTests();
@@ -302,30 +303,30 @@ void entityTests()
     assert(!ent.has("Position", "Velocity", "Unknown"));
 
     // Removing components
-    assert(ent.numComponents() == 3);
+    assert(ent.total() == 3);
     ent.removeAll();
-    assert(ent.numComponents() == 0);
+    assert(ent.total() == 0);
 
     ent << Position(100, 200) << Velocity(150, 300);
-    assert(ent.numComponents() == 2);
+    assert(ent.total() == 2);
     ent.remove<Position>();
-    assert(ent.numComponents() == 1);
+    assert(ent.total() == 1);
     ent.remove<Velocity>();
-    assert(ent.numComponents() == 0);
+    assert(ent.total() == 0);
 
     ent << Position(100, 200) << Velocity(150, 300);
-    assert(ent.numComponents() == 2);
+    assert(ent.total() == 2);
     ent.remove<Position, Velocity>();
-    assert(ent.numComponents() == 0);
+    assert(ent.total() == 0);
     ent.remove<std::string, int, float>();
-    assert(ent.numComponents() == 0);
+    assert(ent.total() == 0);
 
     ent << Position(100, 200) << Velocity(150, 300);
-    assert(ent.numComponents() == 2);
+    assert(ent.total() == 2);
     ent.remove("Position", "Velocity");
-    assert(ent.numComponents() == 0);
+    assert(ent.total() == 0);
     ent.remove("Position", "", "invalid");
-    assert(ent.numComponents() == 0);
+    assert(ent.total() == 0);
 
     // Accessing components
     ent << Position(10, 50) << Velocity(20, 40);
@@ -370,7 +371,7 @@ void entityTests()
     ent.removeAll();
 
     // Invalid accessing of components
-    assert(ent.numComponents() == 0);
+    assert(ent.total() == 0);
     assert(!ent.getPtr<Velocity>());
     assert(!ent.get<Position>());
     assert(!ent.getPtr("Velocity"));
@@ -381,6 +382,10 @@ void entityTests()
     assert(!ent.get(""));
     assert(world.validName("Position"));
     assert(!world.validName("testing"));
+
+    // Iterating through names
+    for (const auto& name: ent.getNames())
+        std::cout << name << "\n";
 
     std::cout << "Entity tests passed.\n";
 }
@@ -473,6 +478,38 @@ void worldTests()
     std::cout << "World tests passed.\n";
 }
 
+void worldBenchmarks()
+{
+    es::loadPrototypes("entities.cfg");
+    es::World world;
+
+    // Create some empty entities
+    auto start = std::chrono::system_clock::now();
+    std::cout << "Creating empty entities...\n";
+    for (size_t i = 0; i < 1000000; ++i)
+        world.create();
+    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+
+    start = std::chrono::system_clock::now();
+    std::cout << "Querying...\n";
+    auto result = world.query();
+    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+
+    start = std::chrono::system_clock::now();
+    std::cout << "Iterating/assigning...\n";
+    for (auto ent: result)
+        ent.assign<Position>(20, 25);
+    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+
+    start = std::chrono::system_clock::now();
+    std::cout << "Iterating/assigning by name...\n";
+    for (auto ent: result)
+        ent["Position"] = "25 20";
+    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+
+    std::cout << "World benchmarks done.\n";
+}
+
 void prototypeTests()
 {
     // Deserialization tests
@@ -501,12 +538,12 @@ void prototypeTests()
 
     // Create entities from prototypes
     auto box = world.copy("Box");
-    assert(box.numComponents() == 3);
+    assert(box.total() == 3);
     assert(box["Size"].save() == "64 64");
     assert(box.getName().empty());
 
     auto player = world.copy("Player", "player");
-    assert(player.numComponents() == 2);
+    assert(player.total() == 2);
     assert(player["Position"].save() == "50 10");
     assert(player.getName() == "player");
     assert(player.getId() == world["player"].getId());

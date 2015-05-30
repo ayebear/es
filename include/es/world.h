@@ -82,6 +82,9 @@ class World
 
         // Miscellaneous =====================================================
 
+        // Returns the number of entities in the world
+        size_t size() const;
+
         operator Core&();
 
         // Returns true if the component name is valid

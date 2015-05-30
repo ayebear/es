@@ -18,6 +18,7 @@ void componentTests();
 void componentPoolTests();
 void entityTests();
 void worldTests();
+void worldBenchmarks();
 void prototypeTests();
 void eventTests();
 void systemTests();

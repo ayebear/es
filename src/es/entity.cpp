@@ -33,6 +33,19 @@ Component* Entity::getPtr(const std::string& name)
     return nullptr;
 }
 
+std::vector<std::string> Entity::getNames() const
+{
+    std::vector<std::string> names;
+    for (const auto& comp: core.entities[id].compSet)
+    {
+        // Get the component's name by type index
+        auto name = core.components.getName(comp.first);
+        if (!name.empty())
+            names.push_back(name);
+    }
+    return names;
+}
+
 Handle<BaseComponentArray, Component> Entity::at(const std::string& name)
 {
     return {core.components[name], atCompId(name)};
@@ -68,7 +81,7 @@ bool Entity::has(const std::string& name) const
     return (getCompId(name) != invalidId);
 }
 
-size_t Entity::numComponents() const
+size_t Entity::total() const
 {
     if (valid())
         return core.entities[id].compSet.size();

@@ -64,6 +64,9 @@ class Entity
         template <typename T>
         Entity& operator>>(T& comp);
 
+        // Returns the names of all its components (only the ones with names)
+        std::vector<std::string> getNames() const;
+
 
         // Accessing components (Automatic creation) =========================
 
@@ -105,7 +108,7 @@ class Entity
         bool has(const std::string& name, const std::string& name2, Args&&... args) const;
 
         // Returns number of component instances
-        size_t numComponents() const;
+        size_t total() const;
 
 
         // Removing components ===============================================

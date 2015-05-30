@@ -51,6 +51,11 @@ World::EntityList World::query()
     return entities;
 }
 
+size_t World::size() const
+{
+    return core.entities.size();
+}
+
 World::operator Core&()
 {
     return core;
