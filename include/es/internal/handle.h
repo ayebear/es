@@ -21,7 +21,7 @@ class Handle
         operator bool() const { return valid(); }
 
         // Erase element that handle is pointing to
-        void erase() { array->erase(id); }
+        void erase() { if (array) array->erase(id); }
 
         // Dereference handle
         T& access() { return (*array)[id]; }

@@ -7,6 +7,8 @@
 #include <typeindex>
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
+#include <memory>
 #include <cassert>
 #include "es/internal/componentarray.h"
 

@@ -32,7 +32,7 @@ void runTests()
     es::registerComponents<Position, Velocity, Size, Sprite>();
     std::cout << "Running all tests...\n";
     packedArrayTests();
-    // packedArrayBenchmarks();
+    packedArrayBenchmarks();
     serializationTests();
     componentTests();
     componentPoolTests();
@@ -61,8 +61,16 @@ void packedArrayTests()
     Test tmp{"Goodbye", 999};
     auto id3 = elements.create(tmp);
 
-    assert(id == 0 && id2 == 1 && id3 == 2);
+    assert(id == 0x0000000100000000ULL);
+    assert(id2 == 0x0000000100000001ULL);
+    assert(id3 == 0x0000000100000002ULL);
     assert(elements[id].num == 5 && elements[id2].num == -50 && elements[id3].num == tmp.num);
+
+    std::vector<es::ID> idList;
+    for (int i = 0; i < 3; ++i)
+        idList.push_back(elements.create(tmp));
+    for (auto elemId: idList)
+        elements.erase(elemId);
 
     // Erase tests
     assert(elements.size() == 3);
@@ -80,13 +88,15 @@ void packedArrayTests()
     assert(elements.begin()->num == elements[id2].num && elements[id2].num == -50);
 
     elements.erase(id2);
-
     assert(elements.size() == 0);
 
     // Handle tests
     auto id4 = elements.create("TEST2", 3141);
 
-    assert(id4 == 4);
+    es::PID pid{id4};
+    assert(pid.version == 2);
+    assert(pid.index == 1);
+    assert(id4 == 0x0000000200000001ULL);
     assert(elements.size() == 1);
 
     auto handle1 = elements.getHandle(id4);
@@ -156,9 +166,9 @@ void packedArrayTests()
 
 void packedArrayBenchmarks()
 {
-    uint64_t numElems = 1000000ULL;
+    const size_t numElems = 1000000;
 
-    es::PackedArray<size_t> array(numElems * 2);
+    es::PackedArray<size_t> array(numElems);
     auto start = std::chrono::system_clock::now();
     std::cout << "Running benchmark 1... (creating)\n";
     for (size_t i = 0; i < numElems; ++i)
@@ -494,14 +504,25 @@ void worldBenchmarks()
 
     // Create some empty entities
     auto start = std::chrono::system_clock::now();
-    std::cout << "Creating empty entities...\n";
+    std::cout << "Creating random entities...\n";
     for (size_t i = 0; i < 1000000; ++i)
-        world.create();
+    {
+        auto ent = world.create();
+        if (rand() % 3)
+            ent.assign<Position>(rand() % 30, rand() % 50);
+        else if (rand() % 3)
+            ent.assign<Sprite>("Some string");
+        else
+        {
+            ent.assign<Position>(rand() % 500, rand() % 400);
+            ent.assign<Velocity>(rand() % 80, rand() % 60);
+        }
+    }
     std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
 
     start = std::chrono::system_clock::now();
     std::cout << "Querying...\n";
-    auto result = world.query();
+    auto result = world.query<Position, Velocity>();
     std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
 
     start = std::chrono::system_clock::now();

@@ -102,9 +102,9 @@ template <typename T, typename... Args>
 World::EntityList World::query()
 {
     EntityList entities;
-    for (const auto& id: core.entities.getIndex())
+    for (auto id: core.entities.getIndex())
     {
-        Entity ent {core, id.first};
+        Entity ent {core, id};
         if (ent.has<T, Args...>())
             entities.push_back(ent);
     }
@@ -115,9 +115,9 @@ template <typename... Args>
 World::EntityList World::query(const std::string& name, Args&&... args)
 {
     EntityList entities;
-    for (const auto& id: core.entities.getIndex())
+    for (auto id: core.entities.getIndex())
     {
-        Entity ent {core, id.first};
+        Entity ent {core, id};
         if (ent.has(name, args...))
             entities.push_back(ent);
     }
