@@ -1,22 +1,13 @@
 cmake_minimum_required (VERSION 2.8.11)
 project (ES)
 
-set (ES_SOURCE
-	src/es/componentpool.cpp
-	src/es/core.cpp
-	src/es/entity.cpp
-	src/es/world.cpp
-	src/es/systemcontainer.cpp
-	src/es/entityprototypeloader.cpp
-)
-
-set (ES_TESTS
-	tests/tests.cpp
-	tests/tests2.cpp)
+AUX_SOURCE_DIRECTORY(src/es ES_SOURCE)
+AUX_SOURCE_DIRECTORY(tests ES_TESTS)
 
 add_subdirectory (lib/ConfigFile)
-add_definitions ("-Wall -std=c++14 -O3")
 include_directories (include lib/ConfigFile)
+
+add_definitions ("-Wall -std=c++14 -O3")
 add_library (es SHARED ${ES_SOURCE})
 add_library (es_s STATIC ${ES_SOURCE})
 add_executable (es_tests ${ES_TESTS})
