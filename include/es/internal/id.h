@@ -36,20 +36,19 @@ Linked list:
 struct PID
 {
     PID():
-    	version(1),
-    	index(0)
+        version(1),
+        index(0)
     {}
 
     // Extracts values from ID
     PID(ID id):
         version(id >> 32),
         index(id)
-        // index(id & 0xFFFFFFFFUL)
     {}
 
     PID(uint32_t version, uint32_t index):
-    	version(version),
-    	index(index)
+        version(version),
+        index(index)
     {}
 
     // Combines values to an ID
