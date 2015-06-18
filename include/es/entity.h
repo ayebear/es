@@ -137,6 +137,9 @@ class Entity
 
         // Entity copying ====================================================
 
+        // Note: Always creates a new entity in the specified core. If this
+            // entity is valid, its components will be copied as well.
+
         // Creates a copy of this entity, and returns it
         Entity clone(const std::string& newName = "") const;
 

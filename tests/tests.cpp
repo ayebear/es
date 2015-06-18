@@ -476,6 +476,15 @@ void worldTests()
     assert(clone3["Position"].save() == "90 95" && clone3["Velocity"].save() == "85 80");
     assert(clone4["Position"].save() == "90 95" && clone4["Velocity"].save() == "85 80");
 
+    // Cloning invalid entities
+    auto ent4 = world.create();
+    ent4.destroy();
+    assert(!ent4);
+    auto ent5 = ent4.clone();
+    assert(ent5);
+    auto ent6 = ent4.clone(world2);
+    assert(ent6);
+
     world["queryTest"] << Position(10, 10) << Velocity(20, 20) << Sprite("test.png");
 
     // Iterating through all entities
@@ -606,6 +615,12 @@ void prototypeTests()
     assert(player["Position"].save() == "50 10");
     assert(player.getName() == "player");
     assert(player.getId() == world["player"].getId());
+
+    // Invalid prototype names
+    auto ent2 = world.copy("");
+    assert(ent2 && ent2.total() == 0);
+    auto ent3 = world.copy("invalid");
+    assert(ent3 && ent3.total() == 0);
 }
 
 void eventTests()

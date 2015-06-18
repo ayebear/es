@@ -117,13 +117,10 @@ Entity Entity::clone(const std::string& newName) const
 
 Entity Entity::clone(Core& newCore, const std::string& newName) const
 {
-    ID newId = invalidId;
+    ID newId = newCore.create(newName);
     if (valid())
-    {
-        newId = newCore.create(newName);
         copyComponents(core, id, newCore, newId);
-    }
-    return Entity(newCore, newId);
+    return {newCore, newId};
 }
 
 ID Entity::getId() const

@@ -122,6 +122,8 @@ auto ent3 = World::prototypes.get("Type").clone(world, "name");
 // (The prototypes are stored in a static World instance)
 ```
 
+Note: Using an invalid prototype name will return a valid, but empty entity.
+
 ##### Access entities:
 
 ```cpp
@@ -158,6 +160,8 @@ auto name = ent.getName();
 ```
 
 ##### Copy entities:
+
+Note: Calling clone() on an invalid entity will return a valid, but empty entity, from the specified world.
 
 Inside a single world:
 
