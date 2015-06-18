@@ -27,15 +27,12 @@ struct Position: public es::Component
 {
     static constexpr auto name = "Position";
 
-    float x {0.0f};
-    float y {0.0f};
+    float x, y;
 
-    Position() {}
-    Position(float x, float y): x{x}, y{y} {}
+    Position(float x = 0, float y = 0): x{x}, y{y} {}
 
     void load(const std::string& str)
     {
-        x = 0, y = 0;
         es::unpack(str, x, y);
     }
 
@@ -49,15 +46,12 @@ struct Velocity: public es::Component
 {
     static constexpr auto name = "Velocity";
 
-    float x {0.0f};
-    float y {0.0f};
+    float x, y;
 
-    Velocity() {}
-    Velocity(float x, float y): x{x}, y{y} {}
+    Velocity(float x = 0, float y = 0): x{x}, y{y} {}
 
     void load(const std::string& str)
     {
-        x = 0, y = 0;
         es::unpack(str, x, y);
     }
 
@@ -71,15 +65,12 @@ struct Size: public es::Component
 {
     static constexpr auto name = "Size";
 
-    float x {0.0f};
-    float y {0.0f};
+    float x, y;
 
-    Size() {}
-    Size(float x, float y): x{x}, y{y} {}
+    Size(float x = 0, float y = 0): x{x}, y{y} {}
 
     void load(const std::string& str)
     {
-        x = 0, y = 0;
         es::unpack(str, x, y);
     }
 
@@ -95,8 +86,7 @@ struct Sprite: public es::Component
 
     std::string filename;
 
-    Sprite() {}
-    Sprite(const std::string& filename): filename(filename) {}
+    Sprite(const std::string& filename = ""): filename(filename) {}
 
     void load(const std::string& str)
     {

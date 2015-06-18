@@ -203,17 +203,46 @@ void packedArrayBenchmarks()
 void serializationTests()
 {
     // Packing data into a string
-    std::string text("TEST");
-    auto str = es::pack("hey", "there", 25, 3.141, text, 99999999999999ULL);
+    std::string packText("TEST");
+    auto str = es::pack("hey", "there", 25, 3.141, packText, 99999999999999ULL);
     assert(str == "hey there 25 3.141 TEST 99999999999999");
 
     // Unpacking data from a string
     float dt;
-    std::string text2;
+    std::string text;
     int num;
-    auto count = es::unpack("0.0123 testing 567", dt, text2, num);
+    auto count = es::unpack("0.0123 testing 567", dt, text, num);
     assert(count == 3);
-    assert(dt > 0.01f && dt < 0.02f && text2 == "testing" && num == 567);
+    assert(dt > 0.01f && dt < 0.02f && text == "testing" && num == 567);
+
+    // Unpack (data > args)
+    int num2;
+    auto count2 = es::unpack("3 2 1", num2);
+    assert(count2 == 1);
+    assert(num2 == 3);
+
+    // Unpack (data < args)
+    int num3 = 500;
+    double dec3 = 1.2345;
+    std::string str3 = "test";
+    auto count3 = es::unpack("999", num3, dec3, str3);
+    assert(count3 == 1);
+    assert(num3 == 999 && dec3 == 0.0 && str3.empty());
+
+    // Rare cases
+    auto count4 = es::unpack("some data");
+    assert(count4 == 0);
+    auto count5 = es::unpack("");
+    assert(count5 == 0);
+    int num6a, num6b, num6c;
+    auto count6 = es::unpack("", num6a, num6b, num6c);
+    assert(count6 == 0);
+    auto str7 = es::pack();
+    assert(str7.empty());
+    auto str8 = es::pack("");
+    assert(str8.empty());
+    auto str9 = es::pack(5.4321);
+    assert(str9 == "5.4321");
 
     std::cout << "Serialization tests passed.\n";
 }

@@ -32,7 +32,10 @@ inline unsigned unpackStream(std::istringstream& stream)
 template <typename T, typename... Args>
 unsigned unpackStream(std::istringstream& stream, T& val, Args&&... args)
 {
-    return !(stream >> val).fail() + unpackStream(stream, args...);
+    unsigned parsed = !(stream >> val).fail();
+    if (!parsed)
+        val = T{};
+    return parsed + unpackStream(stream, args...);
 }
 
 /*
@@ -52,6 +55,10 @@ std::string pack(Args&&... args)
 /*
 Extracts values from a string and stores them into variables.
 Returns the number of values extracted.
+Notes:
+    When there is more data than arguments, it is ignored.
+    When there are more arguments than data, the remaining arguments
+        are default-initialized.
 Usage:
     float dt;
     std::string text;

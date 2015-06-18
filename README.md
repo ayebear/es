@@ -244,11 +244,9 @@ struct Position: public es::Component
 {
     static constexpr auto name = "Position";
 
-    float x {0.0f};
-    float y {0.0f};
+    float x, y;
 
-    Position() {}
-    Position(float x, float y): x{x}, y{y} {}
+    Position(float x = 0, float y = 0): x{x}, y{y} {}
 
     void load(const std::string& str)
     {
