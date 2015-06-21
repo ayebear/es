@@ -532,6 +532,20 @@ void worldTests()
         assert(vel->save() == "3 4");
     }
 
+    // Iterating directly through components
+    world.clear();
+    world["test1"] << Position(20, 30);
+    world["test2"] << Position(20, 30);
+    world["test3"] << Position(20, 30);
+    for (auto& pos: world.getComponents<Position>())
+    {
+        pos.x += 5;
+        pos.y += 10;
+        assert(pos.x == 25 && pos.y == 40);
+    }
+    for (const auto& pos: world.getComponents<Position>())
+        assert(pos.x == 25 && pos.y == 40);
+
     std::cout << "World tests passed.\n";
 }
 

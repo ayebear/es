@@ -33,8 +33,6 @@ class PackedArray
 {
     public:
 
-        using Container = std::vector<T>;
-
         PackedArray() {}
 
         PackedArray(size_t spaceToReserve)
@@ -145,25 +143,11 @@ class PackedArray
             return elements.size();
         }
 
-        typename Container::iterator begin()
-        {
-            return elements.begin();
-        }
-
-        typename Container::iterator end()
-        {
-            return elements.end();
-        }
-
-        typename Container::const_iterator cbegin() const
-        {
-            return elements.cbegin();
-        }
-
-        typename Container::const_iterator cend() const
-        {
-            return elements.cend();
-        }
+        // Iterators for the internal elements array
+        auto begin() { return elements.begin(); }
+        auto end() { return elements.end(); }
+        auto cbegin() const { return elements.cbegin(); }
+        auto cend() const { return elements.cend(); }
 
         // Returns all of the currently used IDs
         std::vector<ID> getIndex() const
@@ -253,7 +237,7 @@ class PackedArray
 
         // Actual elements are stored here
         // This has no "holes", because it's "packed"
-        Container elements;
+        std::vector<T> elements;
 
         // Used to update index when elements are swapped
         // Parallel to elements vector

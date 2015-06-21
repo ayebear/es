@@ -102,6 +102,26 @@ class ComponentArray: public BaseComponentArray
             return array.size();
         }
 
+        auto begin()
+        {
+            return array.begin();
+        }
+
+        auto end()
+        {
+            return array.end();
+        }
+
+        auto cbegin() const
+        {
+            return array.cbegin();
+        }
+
+        auto cend() const
+        {
+            return array.cend();
+        }
+
     private:
         PackedArray<T> array;
 };

@@ -10,6 +10,22 @@
 namespace es
 {
 
+// Wraps a component array into an iterable object
+// This is so component arrays cannot be directly modified
+template <class T>
+struct ComponentArrayIter
+{
+    ComponentArrayIter(ComponentArray<T>& array): array(array) {}
+
+    auto begin() { return array.begin(); }
+    auto end() { return array.end(); }
+    auto cbegin() const { return array.cbegin(); }
+    auto cend() const { return array.cend(); }
+
+    private:
+        ComponentArray<T>& array;
+};
+
 /*
 A wrapper class around Core and Entity.
 Creates instances of Entity by constructing it with ID and Core&.
@@ -57,7 +73,7 @@ class World
         void clear();
 
 
-        // Query entities ====================================================
+        // Query entities and components =====================================
 
         using EntityList = std::vector<Entity>;
 
@@ -71,6 +87,10 @@ class World
         // Returns entities with specified component names
         template <typename... Args>
         EntityList query(const std::string& name, Args&&... args);
+
+        // Used for iterating directly through components
+        template <typename T>
+        ComponentArrayIter<T> getComponents();
 
 
         // Iterate through all entities ======================================
@@ -122,6 +142,12 @@ World::EntityList World::query(const std::string& name, Args&&... args)
             entities.push_back(ent);
     }
     return entities;
+}
+
+template <typename T>
+ComponentArrayIter<T> World::getComponents()
+{
+    return {core.components.get<T>()};
 }
 
 }
