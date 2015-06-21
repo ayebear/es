@@ -369,6 +369,21 @@ posStr = ent["Position"];
 auto comps = ent.serialize();
 ```
 
+#### Iterate through components
+
+Sometimes, you don't need to update things at the entity level, and may want to directly iterate through the internal component arrays. This is much more cache efficient than querying for entities.
+
+Note: Components don't store the ID of the entity that owns it, so if you need to lookup other components that are part of the same entity, you'll have to use the query() function explained above in the "Entities" section.
+
+```cpp
+// Update all position components by (2, 1)
+for (auto& pos: world.getComponents<Position>())
+{
+    pos.x += 2;
+    pos.y += 1;
+}
+```
+
 
 ### Systems
 

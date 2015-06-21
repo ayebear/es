@@ -537,12 +537,15 @@ void worldTests()
     world["test1"] << Position(20, 30);
     world["test2"] << Position(20, 30);
     world["test3"] << Position(20, 30);
+    size_t numComponents = 0;
     for (auto& pos: world.getComponents<Position>())
     {
+        ++numComponents;
         pos.x += 5;
         pos.y += 10;
         assert(pos.x == 25 && pos.y == 40);
     }
+    assert(numComponents == 3);
     for (const auto& pos: world.getComponents<Position>())
         assert(pos.x == 25 && pos.y == 40);
 
