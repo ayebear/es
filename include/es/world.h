@@ -42,9 +42,6 @@ class World
         // Creates an empty entity and returns it
         Entity create(const std::string& name = "");
 
-        // Creates an entity with the specified components
-        // TODO: Determine if this should deal with components
-
         // Creates an entity from a prototype
         Entity copy(const std::string& prototypeName, const std::string& name = "");
 
@@ -53,6 +50,9 @@ class World
 
         // Get entity by name
         Entity operator[](const std::string& name);
+
+        // Get entity by name (and create from prototype if it doesn't exist)
+        Entity operator()(const std::string& prototypeName, const std::string& name);
 
 
         // Returns an invalid Entity if it doesn't exist =====================
@@ -68,6 +68,12 @@ class World
 
 
         // Remove entities ===================================================
+
+        // Remove an entity by ID
+        void destroy(ID id);
+
+        // Remove an entity by name
+        void destroy(const std::string& name);
 
         // Removes all entities
         void clear();
@@ -102,9 +108,16 @@ class World
 
         // Miscellaneous =====================================================
 
+        // Returns true if there is a valid entity with this ID
+        bool valid(ID id) const;
+
+        // Returns true if there is a valid entity with this name
+        bool valid(const std::string& name) const;
+
         // Returns the number of entities in the world
         size_t size() const;
 
+        // Implicit cast for accessing the core
         operator Core&();
 
         // Returns true if the component name is valid

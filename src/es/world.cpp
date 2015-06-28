@@ -23,6 +23,20 @@ Entity World::operator[](const std::string& name)
     return {core, core[name]};
 }
 
+Entity World::operator()(const std::string& prototypeName, const std::string& name)
+{
+    // Fix move constructors so this works
+    // auto ent = get(name);
+    // if (!ent)
+    //     ent = copy(prototypeName, name);
+    // return ent;
+
+    auto ent = get(name);
+    if (!ent)
+        return copy(prototypeName, name);
+    return ent;
+}
+
 Entity World::operator[](ID id)
 {
     return {core, id};
@@ -38,6 +52,16 @@ Entity World::get(ID id)
     return {core, id};
 }
 
+void World::destroy(ID id)
+{
+    get(id).destroy();
+}
+
+void World::destroy(const std::string& name)
+{
+    get(name).destroy();
+}
+
 void World::clear()
 {
     core.clear();
@@ -49,6 +73,16 @@ World::EntityList World::query()
     for (auto id: core.entities.getIndex())
         entities.emplace_back(core, id);
     return entities;
+}
+
+bool World::valid(ID id) const
+{
+    return core.isValid(id);
+}
+
+bool World::valid(const std::string& name) const
+{
+    return core.isValid(core.get(name));
 }
 
 size_t World::size() const

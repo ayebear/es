@@ -440,16 +440,27 @@ void entityTests()
 
 void worldTests()
 {
-    // Create/destroy
+    // Create entities
     es::World world;
     auto ent = world.create();
     auto ent2 = world.create("namedEntity");
     auto ent3 = world["test"];
     assert(ent && ent2 && ent3);
+    assert(ent.getName().empty() && ent2.getName() == "namedEntity" && ent3.getName() == "test");
+
+    // Destroy entities directly
     ent.destroy();
     ent2.destroy();
     ent3.destroy();
     assert(!ent && !ent2 && !ent3);
+
+    // Destroy entities from world
+    auto entD1 = world.create();
+    world.destroy(entD1.getId());
+    assert(!entD1);
+    auto entD2 = world.create("toDestroy");
+    world.destroy("toDestroy");
+    assert(!entD2);
 
     // Create/access
     world["test2"]["Position"].load("250 300");
@@ -457,6 +468,21 @@ void worldTests()
     assert(world["test2"].at<Position>()->x == 250);
     world["test2"].destroy();
     world.clear();
+
+    // Valid tests
+    auto validEnt = world.create("validTest");
+    auto validEntId = validEnt.getId();
+    assert(validEnt.getName() == "validTest");
+    assert(world.valid(validEntId));
+    assert(world.valid("validTest"));
+    world.destroy("validTest");
+    world.destroy(validEnt.getId());
+    validEnt.destroy();
+    world.destroy(validEnt.getId());
+    world.destroy("validTest");
+    assert(validEnt.getName().empty());
+    assert(!world.valid(validEntId));
+    assert(!world.valid("validTest"));
 
     // Cloning entities (same world)
     auto orig = world["original"];
@@ -632,6 +658,27 @@ void prototypeTests()
     assert(player["Position"].save() == "50 10");
     assert(player.getName() == "player");
     assert(player.getId() == world["player"].getId());
+
+    // Testing operator() overloads
+    auto player2 = world("Player", "player2");
+    assert(player2);
+    assert(player2.total() == 2);
+    assert(player2.getName() == "player2");
+
+    auto player3 = world("Player", "");
+    assert(player3);
+    assert(player3.total() == 2);
+    assert(player3.getName().empty());
+
+    auto player4 = world("", "player4");
+    assert(player4);
+    assert(player4.total() == 0);
+    assert(player4.getName() == "player4");
+
+    auto player5 = world("", "");
+    assert(player5);
+    assert(player5.total() == 0);
+    assert(player5.getName().empty());
 
     // Invalid prototype names
     auto ent2 = world.copy("");
