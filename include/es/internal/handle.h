@@ -25,8 +25,13 @@ class Handle
 
         // Dereference handle
         T& access() { return (*array)[id]; }
+        const T& access() const { return (*array)[id]; }
         T* operator-> () { return &((*array)[id]); }
         T& operator* () { return (*array)[id]; }
+
+        // Return pointer to element
+        T* get() { return array->get(id); }
+        const T* get() const { return array->get(id); }
 
     private:
         Container* array;

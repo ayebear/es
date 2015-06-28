@@ -106,6 +106,7 @@ void packedArrayTests()
     assert(handle1.access().name == "TEST2");
     assert((*handle1).name == "TEST2");
     assert(handle1->name == "TEST2");
+    assert(handle1.get()->name == "TEST2");
 
     // This should cause some reallocations
     for (int i = 0; i < 10000; ++i)
@@ -117,8 +118,15 @@ void packedArrayTests()
     assert(handle1.access().name == "TEST2");
     assert((*handle1).name == "TEST2");
     assert(handle1->name == "TEST2");
+    assert(handle1.get()->name == "TEST2");
 
+    assert(handle1);
+    assert(handle1.valid());
+    assert(handle1.get());
     elements.clear();
+    assert(!handle1);
+    assert(!handle1.valid());
+    assert(!handle1.get());
 
     // Test the case were the element on the end is swapped
     auto idA = elements.create();
@@ -139,7 +147,7 @@ void packedArrayTests()
     auto constId = elements.create("Const", 999);
     const auto& constElems = elements;
     auto constHandle = constElems.getHandle(constId);
-    assert(constHandle && constHandle->name == "Const" && constHandle.access().num == 999);
+    assert(constHandle && constHandle->name == "Const" && constHandle.access().num == 999 && constHandle.get()->num == 999);
 
     // Invalid elements
     es::PackedArray<std::string> strs;
