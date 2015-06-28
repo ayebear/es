@@ -583,6 +583,17 @@ void worldTests()
     for (const auto& pos: world.getComponents<Position>())
         assert(pos.x == 25 && pos.y == 40);
 
+    // Handle pointer tests with the world
+    auto test1Ent = world["test1"];
+    auto ptr1 = test1Ent.get<Position>().get();
+    assert(ptr1 && ptr1->x == 25);
+    auto ptr2 = test1Ent.get<Velocity>().get();
+    assert(!ptr2);
+    auto ptr3 = test1Ent.get("Position").get();
+    assert(ptr3 && ptr3->save() == "25 40");
+    auto ptr4 = test1Ent.get("Invalid").get();
+    assert(!ptr4);
+
     std::cout << "World tests passed.\n";
 }
 

@@ -30,8 +30,8 @@ class Handle
         T& operator* () { return (*array)[id]; }
 
         // Return pointer to element
-        T* get() { return array->get(id); }
-        const T* get() const { return array->get(id); }
+        T* get() { return array ? array->get(id) : nullptr; }
+        const T* get() const { return array ? array->get(id) : nullptr; }
 
     private:
         Container* array;
