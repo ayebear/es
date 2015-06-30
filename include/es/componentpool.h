@@ -5,7 +5,6 @@
 #define ES_COMPONENTPOOL_H
 
 #include <typeindex>
-#include <iostream>
 #include <unordered_set>
 #include <unordered_map>
 #include <memory>
@@ -119,24 +118,12 @@ void ComponentPool::registerComponent(const std::string& compName)
         // Update current ComponentPool instances with new type
         for (auto ptr: getStaticData().instances)
             ptr->setupArray(typeIdx, info.array.get());
-
-        std::cout << "ComponentPool: Registered '" << compName << "'\n";
     }
 }
 
 template <typename T>
 ComponentArray<T>& ComponentPool::get()
 {
-    // Creates a new component array if necessary, and returns it
-    /*auto& compArray = components[typeid(T)];
-    if (!compArray)
-        compArray = std::make_unique<ComponentArray<T>>();
-    return *static_cast<ComponentArray<T>*>(compArray.get());*/
-
-    // Registers the type for all component pools, and returns the local array
-    // registerComponent<T>();
-    // return *static_cast<ComponentArray<T>*>(components[typeid(T)].get());
-
     // Only returns the array for registered types
     auto found = components.find(typeid(T));
     assert(found != components.end());

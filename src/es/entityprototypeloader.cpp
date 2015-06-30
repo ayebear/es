@@ -3,6 +3,7 @@
 
 #include "es/entityprototypeloader.h"
 #include "es/world.h"
+#include <iostream>
 
 namespace es
 {
