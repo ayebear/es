@@ -25,15 +25,9 @@ Entity World::operator[](const std::string& name)
 
 Entity World::operator()(const std::string& prototypeName, const std::string& name)
 {
-    // Fix move constructors so this works
-    // auto ent = get(name);
-    // if (!ent)
-    //     ent = copy(prototypeName, name);
-    // return ent;
-
     auto ent = get(name);
     if (!ent)
-        return copy(prototypeName, name);
+        ent = copy(prototypeName, name);
     return ent;
 }
 

@@ -19,7 +19,7 @@ class Entity
 {
     public:
 
-        Entity(Core& core, ID id = invalidId): core(core), id(id) {}
+        Entity(Core& core, ID id = invalidId): core(&core), id(id) {}
 
 
         // Assigning components ==============================================
@@ -209,7 +209,7 @@ class Entity
         // For ending recursion
         void assignFrom() {}
 
-        Core& core;
+        Core* core;
         ID id;
 };
 
@@ -226,8 +226,8 @@ Entity& Entity::assign(Args&&... args)
 {
     if (valid())
     {
-        auto& compArray = core.components.get<T>();
-        auto& compSet = core.entities[id].compSet;
+        auto& compArray = core->components.get<T>();
+        auto& compSet = core->entities[id].compSet;
         auto found = compSet.find(typeid(T));
         if (found == compSet.end())
             compSet[typeid(T)] = compArray.create(args...); // Create new component
@@ -246,13 +246,13 @@ Entity& Entity::operator<<(const T& comp)
 template <typename T>
 Handle<ComponentArray<T>, T> Entity::get()
 {
-    return {&core.components.get<T>(), getCompId<T>()};
+    return {&core->components.get<T>(), getCompId<T>()};
 }
 
 template <typename T>
 T* Entity::getPtr()
 {
-    return core.components.get<T>().get(getCompId<T>());
+    return core->components.get<T>().get(getCompId<T>());
 }
 
 template <typename T>

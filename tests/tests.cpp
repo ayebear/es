@@ -443,6 +443,18 @@ void entityTests()
         ent.remove(name);
     assert(ent.empty());
 
+    // Copying/moving/assigning entities
+    auto ent2 = ent;
+    ent2 = std::move(ent);
+    ent = ent2;
+    assert(ent && ent2);
+    assert(ent.getId() == ent2.getId());
+
+    es::Entity ent3{world};
+    assert(!ent3);
+    ent3 = ent2;
+    assert(ent3);
+
     std::cout << "Entity tests passed.\n";
 }
 
