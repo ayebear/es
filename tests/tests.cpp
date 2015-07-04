@@ -606,6 +606,19 @@ void worldTests()
     auto ptr4 = test1Ent.get("Invalid").get();
     assert(!ptr4);
 
+    // Const tests
+    auto someEnt = world["someEnt"];
+    someEnt << Position(10, 10) << Velocity(20, 20) << Sprite("test.png");
+    const auto& constEnt = someEnt;
+    auto constPos = constEnt.get<Position>();
+    auto constPosPtr = constEnt.getPtr<Position>();
+    auto constBasePos = constEnt.get("Position");
+    auto constBasePosPtr = constEnt.getPtr("Position");
+    assert(constPos->x == 10);
+    assert(constPosPtr->x == 10);
+    assert(constBasePos->save() == "10 10");
+    assert(constBasePosPtr->save() == "10 10");
+
     std::cout << "World tests passed.\n";
 }
 

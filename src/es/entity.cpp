@@ -33,6 +33,22 @@ Component* Entity::getPtr(const std::string& name)
     return nullptr;
 }
 
+const Handle<BaseComponentArray, Component> Entity::get(const std::string& name) const
+{
+    return {core->components[name], getCompId(name)};
+}
+
+const Component* Entity::getPtr(const std::string& name) const
+{
+    if (valid())
+    {
+        auto compArray = core->components[name];
+        if (compArray)
+            return compArray->get(getCompId(name));
+    }
+    return nullptr;
+}
+
 std::vector<std::string> Entity::getNames() const
 {
     std::vector<std::string> names;

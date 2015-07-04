@@ -55,6 +55,11 @@ BaseComponentArray* ComponentPool::operator[](const std::string& compName)
     return operator[](getTypeIndex(compName));
 }
 
+const BaseComponentArray* ComponentPool::operator[](const std::string& compName) const
+{
+    return operator[](getTypeIndex(compName));
+}
+
 void ComponentPool::reset()
 {
     components.clear();

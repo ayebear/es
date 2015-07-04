@@ -46,6 +46,8 @@ class Entity
         // Note: When the component type doesn't exist, these return an
             // invalid handle, or nullptr.
 
+        // Non-const methods
+
         // Returns a handle to a specific component type
         template <typename T>
         Handle<ComponentArray<T>, T> get();
@@ -60,9 +62,25 @@ class Entity
         // Returns a base component pointer by component name
         Component* getPtr(const std::string& name);
 
+        // Const methods
+
+        // Returns a handle to a specific component type
+        template <typename T>
+        const Handle<ComponentArray<T>, T> get() const;
+
+        // Returns a base component handle by component name
+        const Handle<BaseComponentArray, Component> get(const std::string& name) const;
+
+        // Returns a specific component type pointer
+        template <typename T>
+        const T* getPtr() const;
+
+        // Returns a base component pointer by component name
+        const Component* getPtr(const std::string& name) const;
+
         // Writes a copy of the specified component type
         template <typename T>
-        Entity& operator>>(T& comp);
+        const Entity& operator>>(T& comp) const;
 
         // Returns the names of all its components (only the ones with names)
         std::vector<std::string> getNames() const;
@@ -256,7 +274,19 @@ T* Entity::getPtr()
 }
 
 template <typename T>
-Entity& Entity::operator>>(T& comp)
+const Handle<ComponentArray<T>, T> Entity::get() const
+{
+    return {&core->components.get<T>(), getCompId<T>()};
+}
+
+template <typename T>
+const T* Entity::getPtr() const
+{
+    return core->components.get<T>().get(getCompId<T>());
+}
+
+template <typename T>
+const Entity& Entity::operator>>(T& comp) const
 {
     auto ptr = getPtr<T>();
     if (ptr)

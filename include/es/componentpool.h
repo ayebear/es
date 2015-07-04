@@ -46,15 +46,21 @@ class ComponentPool
         static const std::string& getName(const std::type_index& typeIdx);
 
         // Returns the component array from the component's type
-        // Creates a new array if it doesn't exist
         template <typename T>
         ComponentArray<T>& get();
+
+        // Returns the component array from the component's type
+        template <typename T>
+        const ComponentArray<T>& get() const;
 
         // Returns the base componeny array from the component's type index
         BaseComponentArray* operator[](const std::type_index& typeIdx) const;
 
         // Returns the base component array from the component's name
         BaseComponentArray* operator[](const std::string& compName);
+
+        // Returns the base component array from the component's name
+        const BaseComponentArray* operator[](const std::string& compName) const;
 
         // Clears all components, and sets up new arrays cloned from registered types
         void reset();
@@ -128,6 +134,15 @@ ComponentArray<T>& ComponentPool::get()
     auto found = components.find(typeid(T));
     assert(found != components.end());
     return *static_cast<ComponentArray<T>*>(found->second.get());
+}
+
+template <typename T>
+const ComponentArray<T>& ComponentPool::get() const
+{
+    // Only returns the array for registered types
+    auto found = components.find(typeid(T));
+    assert(found != components.end());
+    return *static_cast<const ComponentArray<T>*>(found->second.get());
 }
 
 // Registers a single component type
