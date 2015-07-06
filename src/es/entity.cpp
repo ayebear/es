@@ -179,20 +179,18 @@ Entity::operator bool() const
 std::vector<std::string> Entity::serialize() const
 {
     std::vector<std::string> comps;
-    for (const auto& comp: core->entities[id].compSet)
-    {
-        // Get the component's name by type index
-        auto compName = core->components.getName(comp.first);
-        if (!compName.empty())
-        {
-            // Serialize the component with the name and data
-            auto compData = (*core->components[comp.first])[comp.second].save();
-            if (!compData.empty())
-                compName += ' ' + compData;
-            comps.push_back(compName);
-        }
-    }
+    for (const auto& name: getNames())
+        comps.push_back(serialize(name));
     return comps;
+}
+
+std::string Entity::serialize(const std::string& name) const
+{
+    std::string str;
+    auto comp = getPtr(name);
+    if (comp)
+        str = combine(name, comp->save());
+    return str;
 }
 
 Entity& Entity::deserialize(const std::string& compName, const std::string& compData)
@@ -282,6 +280,14 @@ void Entity::removeComp(const std::type_index& typeIdx)
         core->components[typeIdx]->erase(compId);
         core->entities[id].compSet.erase(typeIdx);
     }
+}
+
+std::string Entity::combine(const std::string& str1, const std::string& str2) const
+{
+    auto combined = str1;
+    if (!str2.empty())
+        combined += ' ' + str2;
+    return combined;
 }
 
 }

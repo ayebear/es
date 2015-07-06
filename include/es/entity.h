@@ -197,6 +197,13 @@ class Entity
         // Serializes all components into a vector of strings (with component names)
         std::vector<std::string> serialize() const;
 
+        // Serializes a single component by type
+        template <typename T>
+        std::string serialize() const;
+
+        // Serializes a single component by name
+        std::string serialize(const std::string& name) const;
+
         // Safely deserializes component name and data
         Entity& deserialize(const std::string& compName, const std::string& compData);
 
@@ -226,6 +233,8 @@ class Entity
 
         // For ending recursion
         void assignFrom() {}
+
+        std::string combine(const std::string& str1, const std::string& str2) const;
 
         Core* core;
         ID id;
@@ -348,6 +357,16 @@ void Entity::remove(const std::string& name, const std::string& name2, Args&&...
 {
     remove(name);
     remove(name2, args...);
+}
+
+template <typename T>
+std::string Entity::serialize() const
+{
+    std::string str;
+    auto comp = getPtr<T>();
+    if (comp)
+        str = combine(T::name, comp->save());
+    return str;
 }
 
 template <typename T>

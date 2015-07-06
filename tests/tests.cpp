@@ -687,6 +687,18 @@ void prototypeTests()
     ent << "Sprite";
     assert(ent.serialize().size() == 3);
 
+    // Serialization tests with component names
+    ent << Position(120, 230) << Sprite();
+    ent.remove<Velocity>();
+    assert(ent.serialize<Position>() == "Position 120 230");
+    assert(ent.serialize("Position") == "Position 120 230");
+    assert(ent.serialize<Sprite>() == "Sprite");
+    assert(ent.serialize("Sprite") == "Sprite");
+    assert(ent.serialize<Velocity>() == "");
+    assert(ent.serialize("Velocity") == "");
+    assert(ent.serialize("Invalid") == "");
+    assert(ent.serialize("") == "");
+
     // Load prototypes
     bool status = es::loadPrototypes("entities.cfg");
     assert(status);
