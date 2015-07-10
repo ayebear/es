@@ -17,7 +17,7 @@ class System
         System() {}
         virtual ~System() {}
 
-        virtual void initialize() {};
+        virtual void initialize() {}
 
         // Derived classes must implement this function
         virtual void update(float dt) = 0;

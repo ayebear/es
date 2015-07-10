@@ -21,20 +21,20 @@ struct Component
     virtual std::string save() const
     {
         return {};
-    };
+    }
 
     // Deserializes a string, and updates the component
-    virtual void load(const std::string& str) {};
+    virtual void load(const std::string& str) {}
 
     void operator=(const std::string& str)
     {
         load(str);
-    };
+    }
 
     void operator=(const char* str)
     {
         load(str);
-    };
+    }
 
     operator std::string() const
     {
