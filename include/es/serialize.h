@@ -13,14 +13,39 @@ namespace es
 /*
 Internal functions for packing/unpacking using streams.
 */
+template <typename T>
+bool notEmpty(const T& val)
+{
+    return true;
+}
+
+inline bool notEmpty(const std::string& val)
+{
+    return !val.empty();
+}
+
+inline bool notEmpty(const char* val)
+{
+    return (val && *val);
+}
+
+template <typename T>
+void addToStream(std::ostringstream& stream, const T& val)
+{
+    if (notEmpty(val))
+    {
+        if (!stream.str().empty())
+            stream << ' ';
+        stream << val;
+    }
+}
+
 inline void packStream(std::ostringstream& stream) {}
 
 template <typename T, typename... Args>
 void packStream(std::ostringstream& stream, const T& val, Args&&... args)
 {
-    stream << val;
-    if (sizeof...(Args))
-        stream << ' ';
+    addToStream(stream, val);
     packStream(stream, args...);
 }
 

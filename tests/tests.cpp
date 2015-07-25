@@ -237,6 +237,15 @@ void serializationTests()
     assert(count3 == 1);
     assert(num3 == 999 && dec3 == 0.0 && str3.empty());
 
+    // Internal serialization functions
+    assert(!es::notEmpty(""));
+    assert(es::notEmpty("test1"));
+    assert(es::notEmpty(5));
+    std::string tmpStr;
+    assert(!es::notEmpty(tmpStr));
+    tmpStr = "test2";
+    assert(es::notEmpty(tmpStr));
+
     // Rare cases
     auto count4 = es::unpack("some data");
     assert(count4 == 0);
@@ -251,6 +260,16 @@ void serializationTests()
     assert(str8.empty());
     auto str9 = es::pack(5.4321);
     assert(str9 == "5.4321");
+    auto str10 = es::pack("", "");
+    assert(str10.empty());
+    auto str11 = es::pack("", "", "");
+    assert(str11.empty());
+    auto str12 = es::pack("data", "", "", str10, str10);
+    assert(str12 == "data");
+    auto str13 = es::pack(str10, str10, "", str10);
+    assert(str13.empty());
+    auto str14 = es::pack("", "", str10, "test", str10, "", "");
+    assert(str14 == "test");
 
     std::cout << "Serialization tests passed.\n";
 }
