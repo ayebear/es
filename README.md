@@ -403,7 +403,7 @@ public:
 
     void update(float dt)
     {
-        for (auto& ent: world)
+        for (auto ent: world.query())
         {
             auto pos = ent.get<Position>();
             auto vel = ent.get<Velocity>();
