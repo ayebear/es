@@ -4,8 +4,8 @@
 #ifndef ES_WORLD_H
 #define ES_WORLD_H
 
-#include "es/internal/core.h"
-#include "es/entity.h"
+#include <es/internal/core.h>
+#include <es/entity.h>
 
 namespace es
 {
@@ -42,8 +42,11 @@ class World
         // Creates an empty entity and returns it
         Entity create(const std::string& name = "");
 
-        // Creates an entity from a prototype
+        // Creates an entity from a prototype (same as clone)
         Entity copy(const std::string& prototypeName, const std::string& name = "");
+
+        // Creates an entity from a prototype (same as copy)
+        Entity clone(const std::string& prototypeName, const std::string& name = "");
 
 
         // Creates a new entity if needed ====================================

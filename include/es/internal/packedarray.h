@@ -7,8 +7,8 @@
 #include <cstdint>
 #include <vector>
 #include <limits>
-#include "es/internal/id.h"
-#include "es/internal/handle.h"
+#include <es/internal/id.h>
+#include <es/internal/handle.h>
 
 namespace es
 {

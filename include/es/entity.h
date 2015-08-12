@@ -4,9 +4,9 @@
 #ifndef ES_ENTITY_H
 #define ES_ENTITY_H
 
-#include "es/component.h"
-#include "es/componentpool.h"
-#include "es/internal/core.h"
+#include <es/component.h>
+#include <es/componentpool.h>
+#include <es/internal/core.h>
 
 namespace es
 {

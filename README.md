@@ -69,6 +69,8 @@ No other entity system currently has **all** of these features:
 
 ## Build Steps
 
+### Build ES library
+
 ##### Checkout the repository and submodules:
 
 ```
@@ -86,6 +88,24 @@ make
 ```
 
 At this point, you should have the files libes.so and libes_s.a, which you can dynamically or statically link to your project.
+
+### Include and link ES with your project
+
+1. Clone the repository or add it as a submodule to your repository.
+2. Include and link ES in your CMakeLists.txt file:
+
+```cmake
+# Root of ES repository is in "lib/es"
+add_subdirectory(lib/es)
+
+# Link ES library (dynamically)
+target_link_libraries(your_project LINK_PUBLIC es)
+
+# Link ES library (statically)
+target_link_libraries(your_project LINK_PUBLIC es_s)
+```
+
+If you aren't using CMake, you will need to download and build [ConfigFile](https://github.com/ayebear/ConfigFile) as well, which will need to be included and linked to your project.
 
 
 ## Example Usage

@@ -7,11 +7,7 @@
 #include <deque>
 #include <cassert>
 #include <algorithm>
-#include "es/internal/packedarray.h"
-#include "es/componentpool.h"
-#include "es/serialize.h"
-#include "es/world.h"
-#include "es/entityprototypeloader.h"
+#include <es/es.h>
 
 int main()
 {

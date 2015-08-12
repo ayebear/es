@@ -4,9 +4,9 @@
 #ifndef ES_COMPONENTARRAY_H
 #define ES_COMPONENTARRAY_H
 
-#include "es/component.h"
-#include "es/internal/packedarray.h"
-#include "es/internal/id.h"
+#include <es/component.h>
+#include <es/internal/packedarray.h>
+#include <es/internal/id.h>
 #include <memory>
 
 namespace es

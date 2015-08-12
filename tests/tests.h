@@ -4,8 +4,8 @@
 #ifndef ES_TESTS_H
 #define ES_TESTS_H
 
-#include "es/component.h"
-#include "es/serialize.h"
+#include <es/component.h>
+#include <es/serialize.h>
 
 namespace esTests
 {

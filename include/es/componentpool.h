@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <memory>
 #include <cassert>
-#include "es/internal/componentarray.h"
+#include <es/internal/componentarray.h>
 
 namespace es
 {

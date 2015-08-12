@@ -1,7 +1,7 @@
 // Copyright (C) 2015 Eric Hebert (ayebear)
 // This code is licensed under LGPLv3, see LICENSE.txt for details.
 
-#include "es/world.h"
+#include <es/world.h>
 
 namespace es
 {
@@ -16,6 +16,11 @@ Entity World::create(const std::string& name)
 Entity World::copy(const std::string& prototypeName, const std::string& name)
 {
     return prototypes.get(prototypeName).clone(core, name);
+}
+
+Entity World::clone(const std::string& prototypeName, const std::string& name)
+{
+    return copy(prototypeName, name);
 }
 
 Entity World::operator[](const std::string& name)
