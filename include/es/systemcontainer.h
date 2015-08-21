@@ -9,6 +9,8 @@
 #include <memory>
 #include <typeinfo>
 #include <typeindex>
+#include <limits>
+#include <iostream>
 #include <es/system.h>
 
 namespace es
@@ -33,12 +35,14 @@ Example usage:
 class SystemContainer
 {
     public:
+
+        static const size_t invalidIndex = std::numeric_limits<size_t>::max();
+
         SystemContainer();
 
-        // Adds a new system. Usage:
-        //     addSystem<SystemType>(constructor arguments);
+        // Adds a new system to the end of the list, and returns its index
         template <typename T, typename... Args>
-        void add(Args&&... args);
+        size_t add(Args&&... args);
 
         // Calls initialize() on all systems
         void initializeAll();
@@ -55,48 +59,159 @@ class SystemContainer
         template <typename T>
         void update(float dt);
 
+        // Removes a specific system
+        template <typename T>
+        void remove();
+
+        // Removes all systems
+        void clear();
+
+        // Swaps the order of two systems by type
+        template <typename A, typename B>
+        void swap();
+
+        // Moves a system to a new index, shifting the current system at this index to the right
+        // Note: 0 is the beginning, >= size() is the end
+        template <typename T>
+        void move(size_t destIndex);
+
+        // Returns number of systems currently in container
+        size_t size() const;
+
+        // Returns position of system in container, or invalidIndex if it doesn't exist
+        template <typename T>
+        size_t getIndex() const;
+
+        // Returns true if the system exists
+        template <typename T>
+        bool exists() const;
+
+        // Returns a pointer to a system (nullptr if it doesn't exist)
+        template <typename T>
+        T* getSystem();
+
     private:
-        using SystemPtr = std::unique_ptr<System>;
+
+        struct SystemPtr
+        {
+            SystemPtr() {}
+            SystemPtr(std::unique_ptr<System> ptr, const std::type_index& typeIndex):
+                ptr(std::move(ptr)),
+                typeIndex(typeIndex)
+            {}
+            std::unique_ptr<System> ptr;
+            std::type_index typeIndex{typeid(void)};
+        };
+
         std::vector<SystemPtr> systems;
         std::unordered_map<std::type_index, size_t> systemTypes;
 
-        // Returns a system pointer from the type (nullptr if it doesn't exist)
-        template <typename T>
-        System* getSystem();
+        // Returns the position of a system by type index
+        size_t getIndex(const std::type_index& type) const;
 
-        // Adds the type to the types table, and returns the index
-        size_t getIndex(const std::type_index& type);
+        // Rebuilds the system types index (default will rebuild all)
+        void updateSystemTypes(size_t start = 0);
 };
 
 template <typename T, typename... Args>
-void SystemContainer::add(Args&&... args)
+size_t SystemContainer::add(Args&&... args)
 {
-    size_t index = getIndex(typeid(T));
-    systems[index] = std::make_unique<T>(std::forward<Args>(args)...);
+    size_t index = invalidIndex;
+    std::type_index typeIndex{typeid(T)};
+    if (systemTypes.find(typeIndex) == systemTypes.end())
+    {
+        // Add the system pointer and store the index
+        index = systems.size();
+        systems.emplace_back(std::make_unique<T>(std::forward<Args>(args)...), typeIndex);
+        systemTypes[typeIndex] = index;
+    }
+    else
+        std::cout << "SystemContainer: Warning, '" << typeIndex.name() << "' was already added.\n";
+
+    return index;
 }
 
 template <typename T>
 void SystemContainer::initialize()
 {
-    auto system = getSystem<T>();
-    if (system)
-        system->initialize();
+    auto sys = getSystem<T>();
+    if (sys)
+        sys->initialize();
 }
 
 template <typename T>
 void SystemContainer::update(float dt)
 {
-    auto system = getSystem<T>();
-    if (system)
-        system->update(dt);
+    auto sys = getSystem<T>();
+    if (sys)
+        sys->update(dt);
 }
 
 template <typename T>
-System* SystemContainer::getSystem()
+void SystemContainer::remove()
+{
+    size_t index = getIndex<T>();
+    if (index != invalidIndex)
+    {
+        systems.erase(systems.begin() + index);
+        systemTypes.erase(typeid(T));
+        updateSystemTypes(index);
+    }
+}
+
+template <typename A, typename B>
+void SystemContainer::swap()
+{
+    auto indexA = getIndex<A>();
+    auto indexB = getIndex<B>();
+    systemTypes[typeid(A)] = indexB;
+    systemTypes[typeid(B)] = indexA;
+    std::swap(systems[indexA], systems[indexB]);
+}
+
+template <typename T>
+void SystemContainer::move(size_t destIndex)
+{
+    size_t index = getIndex<T>();
+    if (index != invalidIndex)
+    {
+        // Move out pointer and type
+        SystemPtr systemPointer;
+        systemPointer.ptr = std::move(systems[index].ptr);
+        systemPointer.typeIndex = systems[index].typeIndex;
+
+        // Erase original pointer location
+        systems.erase(systems.begin() + index);
+
+        // Re-insert back into vector
+        auto iter = systems.end();
+        if (destIndex < systems.size())
+            iter = systems.begin() + destIndex;
+        systems.insert(iter, std::move(systemPointer));
+
+        // Update system types index
+        updateSystemTypes(std::min(index, destIndex));
+    }
+}
+
+template <typename T>
+size_t SystemContainer::getIndex() const
+{
+    return getIndex(typeid(T));
+}
+
+template <typename T>
+bool SystemContainer::exists() const
+{
+    return (getIndex<T>() != invalidIndex);
+}
+
+template <typename T>
+T* SystemContainer::getSystem()
 {
     auto found = systemTypes.find(typeid(T));
     if (found != systemTypes.end())
-        return systems[found->second].get();
+        return static_cast<T*>(systems[found->second].ptr.get());
     return nullptr;
 }
 

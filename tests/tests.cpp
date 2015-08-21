@@ -765,7 +765,57 @@ void eventTests()
 
 void systemTests()
 {
+    es::SystemContainer systems;
+    auto id1 = systems.add<System1>();
+    auto id2 = systems.add<System2>();
+    auto id3 = systems.add<System3>();
+    std::cout << "Note: Warning should be shown below:\n";
+    auto id3b = systems.add<System3>();
+    assert(id1 == systems.getIndex<System1>());
+    assert(id2 == systems.getIndex<System2>());
+    assert(id3 == systems.getIndex<System3>());
+    assert(id3b == es::SystemContainer::invalidIndex);
 
+    systems.remove<System1>();
+    systems.remove<System1>();
+    systems.remove<System2>();
+    systems.remove<System3>();
+    systems.remove<System3>();
+    systems.remove<System1>();
+
+    systems.add<System1>();
+    systems.add<System2>();
+    systems.add<System3>();
+    systems.add<System4>("test");
+
+    systems.initializeAll();
+    systems.updateAll(0);
+
+    systems.swap<System2, System4>();
+    std::cout << "Swapped systems 2 and 4.\n";
+
+    systems.initializeAll();
+    systems.updateAll(1);
+
+    systems.move<System4>(0);
+    std::cout << "Moved system 4 to beginning.\n";
+    systems.updateAll(2);
+
+    systems.move<System4>(200);
+    std::cout << "Moved system 4 to end.\n";
+    systems.updateAll(3);
+
+    assert(systems.exists<System3>());
+    assert(!systems.exists<int>());
+    assert(!systems.exists<std::string>());
+    systems.remove<System3>();
+    assert(!systems.exists<System3>());
+
+    auto sys1 = systems.getSystem<System1>();
+    assert(sys1);
+    sys1->test();
+
+    std::cout << "System tests passed.\n";
 }
 
 

@@ -14,28 +14,39 @@ void SystemContainer::initializeAll()
 {
     // Call initialize on all of the systems
     for (auto& s: systems)
-        s->initialize();
+        s.ptr->initialize();
 }
 
 void SystemContainer::updateAll(float dt)
 {
     // Call update on all of the systems
     for (auto& s: systems)
-        s->update(dt);
+        s.ptr->update(dt);
 }
 
-size_t SystemContainer::getIndex(const std::type_index& type)
+void SystemContainer::clear()
+{
+    systemTypes.clear();
+    systems.clear();
+}
+
+size_t SystemContainer::size() const
+{
+    return systems.size();
+}
+
+size_t SystemContainer::getIndex(const std::type_index& type) const
 {
     auto found = systemTypes.find(type);
-    if (found == systemTypes.end())
-    {
-        // Add the system pointer and store the index
-        size_t index = systems.size();
-        systems.emplace_back();
-        systemTypes[type] = index;
-        return index;
-    }
-    return found->second;
+    if (found != systemTypes.end())
+        return found->second;
+    return invalidIndex;
+}
+
+void SystemContainer::updateSystemTypes(size_t start)
+{
+    for (size_t i = start; i < systems.size(); ++i)
+        systemTypes[systems[i].typeIndex] = i;
 }
 
 }
