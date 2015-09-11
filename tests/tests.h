@@ -8,6 +8,7 @@
 #include <es/serialize.h>
 #include <es/system.h>
 #include <iostream>
+#include <assert.h>
 
 namespace esTests
 {
@@ -184,6 +185,26 @@ class System4: public es::System
 
     private:
         std::string str;
+};
+
+class System5: public es::System
+{
+    public:
+        System5()
+        {
+            std::cout << "System5::System5()\n";
+        }
+
+        void initialize()
+        {
+            std::cout << "System5::initialize()\n";
+        }
+
+        void update(float dt)
+        {
+            std::cout << "System5::update()\n";
+            assert(world != nullptr, "es::System::world is uninitialized");
+        }
 };
 
 }

@@ -4,6 +4,8 @@
 #ifndef ES_SYSTEM_H
 #define ES_SYSTEM_H
 
+#include <es/world.h>
+
 namespace es
 {
 
@@ -21,6 +23,10 @@ class System
 
         // Derived classes must implement this function
         virtual void update(float dt) = 0;
+
+        void setDefaultWorld(es::World* world) { this->world = world;}
+    protected:
+       es::World* world{ nullptr };
 };
 
 }
