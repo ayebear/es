@@ -12,6 +12,7 @@
 #include <limits>
 #include <iostream>
 #include <es/system.h>
+#include <es/world.h>
 
 namespace es
 {
@@ -90,6 +91,9 @@ class SystemContainer
         template <typename T>
         T* getSystem();
 
+        // Sets the default world object that all registered systems get a reference to
+        void registerWorld(es::World* world);
+
     private:
 
         struct SystemPtr
@@ -105,6 +109,8 @@ class SystemContainer
 
         std::vector<SystemPtr> systems;
         std::unordered_map<std::type_index, size_t> systemTypes;
+
+        World* world{ nullptr };
 
         // Returns the position of a system by type index
         size_t getIndex(const std::type_index& type) const;
@@ -124,6 +130,7 @@ size_t SystemContainer::add(Args&&... args)
         index = systems.size();
         systems.emplace_back(std::make_unique<T>(std::forward<Args>(args)...), typeIndex);
         systemTypes[typeIndex] = index;
+        systems[index].ptr->setDefaultWorld(world);
     }
     else
         std::cout << "SystemContainer: Warning, '" << typeIndex.name() << "' was already added.\n";

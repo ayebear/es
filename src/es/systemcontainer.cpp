@@ -49,4 +49,6 @@ void SystemContainer::updateSystemTypes(size_t start)
         systemTypes[systems[i].typeIndex] = i;
 }
 
+void SystemContainer::registerWorld(es::World* world) { this->world = world; }
 }
+
