@@ -8,6 +8,7 @@
 #include <es/serialize.h>
 #include <es/system.h>
 #include <iostream>
+#include <cassert>
 
 namespace esTests
 {
@@ -150,16 +151,21 @@ class System3: public es::System
         System3()
         {
             std::cout << "System3::System3()\n";
+            assert(!world);
         }
 
         void initialize()
         {
             std::cout << "System3::initialize()\n";
+            assert(world);
+            (*world)["System3"].assign<Position>(1, 100);
         }
 
         void update(float dt)
         {
             std::cout << "System3::update(" << dt << ")\n";
+            assert(world);
+            (*world)["System3"].assign<Position>(2, 100);
         }
 };
 

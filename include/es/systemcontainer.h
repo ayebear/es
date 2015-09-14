@@ -16,6 +16,8 @@
 namespace es
 {
 
+class World;
+
 /*
 This class can contain different systems, which are derived from the System base class.
 It updates the systems in the order they were added, but also supports updating a single system by type.
@@ -39,6 +41,10 @@ class SystemContainer
         static const size_t invalidIndex = std::numeric_limits<size_t>::max();
 
         SystemContainer();
+
+        SystemContainer(World& world);
+
+        void setWorld(World& world);
 
         // Adds a new system to the end of the list, and returns its index
         template <typename T, typename... Args>
@@ -92,6 +98,8 @@ class SystemContainer
 
     private:
 
+        World* world{nullptr};
+
         struct SystemPtr
         {
             SystemPtr() {}
@@ -122,7 +130,9 @@ size_t SystemContainer::add(Args&&... args)
     {
         // Add the system pointer and store the index
         index = systems.size();
-        systems.emplace_back(std::make_unique<T>(std::forward<Args>(args)...), typeIndex);
+        auto sys = std::make_unique<T>(std::forward<Args>(args)...);
+        sys->setWorld(world);
+        systems.emplace_back(std::move(sys), typeIndex);
         systemTypes[typeIndex] = index;
     }
     else

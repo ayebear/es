@@ -10,6 +10,16 @@ SystemContainer::SystemContainer()
 {
 }
 
+SystemContainer::SystemContainer(World& w):
+    world(&w)
+{
+}
+
+void SystemContainer::setWorld(World& w)
+{
+    world = &w;
+}
+
 void SystemContainer::initializeAll()
 {
     // Call initialize on all of the systems

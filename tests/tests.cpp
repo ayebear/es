@@ -18,7 +18,7 @@ int main()
 namespace esTests
 {
 
-double getElapsedTime(const auto& start)
+double getElapsedTime(const std::chrono::time_point<std::chrono::system_clock>& start)
 {
     return std::chrono::duration<double>(std::chrono::system_clock::now() - start).count();
 }
@@ -765,7 +765,8 @@ void eventTests()
 
 void systemTests()
 {
-    es::SystemContainer systems;
+    es::World world;
+    es::SystemContainer systems(world);
     auto id1 = systems.add<System1>();
     auto id2 = systems.add<System2>();
     auto id3 = systems.add<System3>();
@@ -789,7 +790,9 @@ void systemTests()
     systems.add<System4>("test");
 
     systems.initializeAll();
+    assert(world["System3"].get<Position>()->x == 1);
     systems.updateAll(0);
+    assert(world["System3"].get<Position>()->x == 2);
 
     systems.swap<System2, System4>();
     std::cout << "Swapped systems 2 and 4.\n";
@@ -817,8 +820,5 @@ void systemTests()
 
     std::cout << "System tests passed.\n";
 }
-
-
-
 
 }
