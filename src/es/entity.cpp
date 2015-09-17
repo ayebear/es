@@ -233,9 +233,18 @@ void Entity::copyComponents(const Core& srcCore, ID srcId, Core& destCore, ID de
     auto& destCompSet = destCore.entities[destId].compSet;
     for (auto srcCompId: srcCore.entities[srcId].compSet)
     {
+        // Get the destination component array to copy components into
         auto destCompArray = destCore.components[srcCompId.first];
         assert(destCompArray);
-        destCompSet[srcCompId.first] = destCompArray->copyFrom(*srcCore.components[srcCompId.first], srcCompId.second);
+
+        // Copy the component from the source array to the destination array
+        auto id = destCompArray->copyFrom(*srcCore.components[srcCompId.first], srcCompId.second);
+
+        // Update the destination entity to have the newly copied component ID
+        destCompSet[srcCompId.first] = id;
+
+        // Update the owner ID to be the destination entity ID
+        (*destCompArray)[id].ownerId = destId;
     }
 }
 
@@ -264,8 +273,14 @@ ID Entity::atCompId(const std::string& name)
         auto compArray = core->components[name];
         if (compArray)
         {
+            // Create new component
             compId = compArray->create();
+
+            // Add component ID to this entity's component set
             core->entities[id].compSet[core->components.getTypeIndex(name)] = compId;
+
+            // Update owner ID
+            (*compArray)[compId].ownerId = id;
         }
     }
     return compId;

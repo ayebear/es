@@ -280,6 +280,7 @@ void componentTests()
     es::Component& baseComp = posComp;
     posStr = baseComp;
     assert(posStr == "22.1 97.3");
+    assert(posComp.getOwnerId() == es::invalidId);
 
     // From the name querying loop in the readme
     es::World world;
@@ -351,6 +352,8 @@ void entityTests()
 
     auto posHandle = ent.get<Position>();
     assert(posHandle && posHandle->x > 99.0f && posHandle->x < 101.0f);
+
+    assert(ent.getId() == posHandle->getOwnerId());
 
     // Checking if components exist
     bool hasComps = ent.has<Position, Velocity>();
@@ -529,6 +532,13 @@ void worldTests()
     assert(clone1["Position"].save() == "90 95" && clone1["Velocity"].save() == "85 80");
     assert(clone2["Position"].save() == "90 95" && clone2["Velocity"].save() == "85 80");
 
+    // Owner ID tests
+    assert(clone1.getId() != clone2.getId());
+    assert(clone1.getId() == clone1["Position"].getOwnerId());
+    assert(clone2.getId() == clone2["Position"].getOwnerId());
+    assert(clone1.get<Position>()->getOwnerId() != orig.get<Position>()->getOwnerId());
+    assert(clone1.get<Position>()->getOwnerId() != clone2.get<Position>()->getOwnerId());
+
     // Cloning entities (between worlds)
     es::World world2;
     auto clone3 = orig.clone(world2);
@@ -536,6 +546,11 @@ void worldTests()
     assert(clone3.getName().empty() && clone4.getName() == "clone4");
     assert(clone3["Position"].save() == "90 95" && clone3["Velocity"].save() == "85 80");
     assert(clone4["Position"].save() == "90 95" && clone4["Velocity"].save() == "85 80");
+
+    // Owner ID tests
+    assert(clone3.get<Position>()->getOwnerId() != orig.get<Position>()->getOwnerId());
+    assert(clone3.get<Position>()->getOwnerId() != clone4.get<Position>()->getOwnerId());
+    assert(clone4.get<Position>()->getOwnerId() != orig.get<Position>()->getOwnerId());
 
     // Cloning invalid entities
     auto ent4 = world.create();
@@ -610,6 +625,23 @@ void worldTests()
     for (const auto& pos: world.getComponents<Position>())
         assert(pos.x == 25 && pos.y == 40);
 
+    // Iterating through components using owner ID
+    world["test4"] << Position(1, 2) << Velocity(3, 4);
+    world["test5"] << Position(5, 6) << Velocity(7, 8);
+    for (auto& pos: world.getComponents<Position>())
+    {
+        auto vel = world.from(pos).get<Velocity>();
+        auto vel2 = world[pos.getOwnerId()].get<Velocity>();
+        if (vel)
+        {
+            assert(vel2);
+            assert(pos.getOwnerId() == vel->getOwnerId());
+            assert(vel->getOwnerId() == vel2->getOwnerId());
+            vel->x += 10;
+            assert(vel->x == 13 || vel->x == 17);
+        }
+    }
+
     // Handle pointer tests with the world
     auto test1Ent = world["test1"];
     auto ptr1 = test1Ent.get<Position>().get();
@@ -658,24 +690,48 @@ void worldBenchmarks()
             ent.assign<Velocity>(rand() % 80, rand() % 60);
         }
     }
-    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n\n";
 
     start = std::chrono::system_clock::now();
     std::cout << "Querying...\n";
     auto result = world.query<Position, Velocity>();
-    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+    double et = getElapsedTime(start);
+    std::cout << "Done in " << et << " seconds.\n\n";
+
+    start = std::chrono::system_clock::now();
+    std::cout << "Iterating through query results...\n";
+    for (auto ent: result)
+    {
+        ent.get<Position>();
+        ent.get<Velocity>();
+    }
+    double et2 = getElapsedTime(start);
+    std::cout << "Done in " << et2 << " seconds.\n\n";
+
+
+    start = std::chrono::system_clock::now();
+    std::cout << "Directly iterating...\n";
+
+    for (auto& pos: world.getComponents<Position>())
+        world.from(pos).get<Velocity>();
+
+    double et3 = getElapsedTime(start);
+    std::cout << "Done in " << et3 << " seconds.\n";
+    double speedup = (et + et2) / et3;
+    std::cout << "NOTE: Direct iteration provides a " << speedup << "x speedup.\n\n";
+
 
     start = std::chrono::system_clock::now();
     std::cout << "Iterating/assigning...\n";
     for (auto ent: result)
         ent.assign<Position>(20, 25);
-    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n\n";
 
     start = std::chrono::system_clock::now();
     std::cout << "Iterating/assigning by name...\n";
     for (auto ent: result)
         ent["Position"] = "25 20";
-    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n";
+    std::cout << "Done in " << getElapsedTime(start) << " seconds.\n\n";
 
     std::cout << "World benchmarks done.\n";
 }

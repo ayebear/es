@@ -69,6 +69,9 @@ class World
         // Get entity by ID
         Entity get(ID id);
 
+        // Get entity from component (with owner ID)
+        Entity from(const Component& comp);
+
 
         // Remove entities ===================================================
 

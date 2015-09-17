@@ -51,6 +51,11 @@ Entity World::get(ID id)
     return {core, id};
 }
 
+Entity World::from(const Component& comp)
+{
+    return {core, comp.getOwnerId()};
+}
+
 void World::destroy(ID id)
 {
     get(id).destroy();
