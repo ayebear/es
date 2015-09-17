@@ -419,11 +419,9 @@ A simple base class with initialize() and update() methods. This is used by the 
 class MovementSystem: public es::System
 {
 public:
-    MovementSystem(es::World& world): world(world) {}
-
     void update(float dt)
     {
-        for (auto ent: world.query())
+        for (auto ent: world->query())
         {
             auto pos = ent.get<Position>();
             auto vel = ent.get<Velocity>();
@@ -434,9 +432,6 @@ public:
             }
         }
     }
-
-private:
-    es::World& world;
 };
 ```
 
@@ -447,9 +442,10 @@ This class stores instances of es::System classes, and can call initialize/updat
 ##### Add systems to a container
 
 ```cpp
-SystemContainer systems;
-systems.add<MovementSystem>(world);
-systems.add<RenderSystem>(world, window);
+es::World world;
+es::SystemContainer systems(world);
+systems.add<MovementSystem>();
+systems.add<RenderSystem>(window);
 ```
 
 ##### Initialize and update the systems
