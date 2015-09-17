@@ -256,22 +256,21 @@ Entity& Entity::assign(Args&&... args)
         auto& compArray = core->components.get<T>();
         auto& compSet = core->entities[id].compSet;
         auto found = compSet.find(typeid(T));
-        es::ID compId;
         if (found == compSet.end())
         {
             // Create new component and update component set
-            compId = compArray.create(args...);
+            es::ID compId = compArray.create(args...);
             compSet[typeid(T)] = compId;
+            compArray[compId].ownerId = id;
         }
         else
         {
             // Assign existing component
-            compId = found->second;
-            compArray[compId] = T(args...);
+            es::ID compId = found->second;
+            auto& comp = compArray[compId];
+            comp = T(args...);
+            comp.ownerId = id;
         }
-
-        // Update owner ID in component
-        compArray[compId].ownerId = id;
     }
     return *this;
 }
