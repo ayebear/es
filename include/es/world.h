@@ -21,6 +21,7 @@ struct ComponentArrayIter
     auto end() { return array.end(); }
     auto cbegin() const { return array.cbegin(); }
     auto cend() const { return array.cend(); }
+    size_t size() const { return array.size(); }
 
     private:
         ComponentArray<T>& array;
@@ -133,34 +134,85 @@ class World
 
     private:
 
+        template <typename... Args>
+        std::vector<TypeIndex> getTypeIndexes() const;
+
+        template <typename... Args>
+        std::vector<TypeIndex> getTypeIndexesString(const std::string& name, Args&&... args) const;
+
+        void getTypeIndexString(std::vector<TypeIndex>& types, const std::string& name) const;
+
+        template <typename... Args>
+        void getTypeIndexString(std::vector<TypeIndex>& types, const std::string& name1, const std::string& name2, Args&&... args) const;
+
+        template <typename T>
+        void getTypeIndex(std::vector<TypeIndex>& types) const;
+
+        template <typename A, typename B, typename... Args>
+        void getTypeIndex(std::vector<TypeIndex>& types) const;
+
+        EntityList queryTypes(std::vector<TypeIndex>& types);
+
+        EntityList iterate(const std::type_index& minType, std::vector<TypeIndex>& types);
+
         Core core;
 
 };
 
+template <typename... Args>
+std::vector<TypeIndex> World::getTypeIndexes() const
+{
+    std::vector<TypeIndex> types;
+    getTypeIndex<Args...>(types);
+    return types;
+}
+
+template <typename... Args>
+std::vector<TypeIndex> World::getTypeIndexesString(const std::string& name, Args&&... args) const
+{
+    std::vector<TypeIndex> types;
+    getTypeIndexString(types, name, args...);
+    return types;
+}
+
+template <typename... Args>
+void World::getTypeIndexString(std::vector<TypeIndex>& types, const std::string& name1, const std::string& name2, Args&&... args) const
+{
+    getTypeIndexString(types, name1);
+    getTypeIndexString(types, name2, args...);
+}
+
+template <typename T>
+void World::getTypeIndex(std::vector<TypeIndex>& types) const
+{
+    types.emplace_back(typeid(T));
+}
+
+template <typename A, typename B, typename... Args>
+void World::getTypeIndex(std::vector<TypeIndex>& types) const
+{
+    getTypeIndex<A>(types);
+    getTypeIndex<B, Args...>(types);
+}
+
 template <typename T, typename... Args>
 World::EntityList World::query()
 {
-    EntityList entities;
-    for (auto id: core.entities.getIndex())
-    {
-        Entity ent {core, id};
-        if (ent.has<T, Args...>())
-            entities.push_back(ent);
-    }
-    return entities;
+    // Get all type indexes from component types
+    auto types = getTypeIndexes<T, Args...>();
+
+    // Return list of entities with these component types
+    return queryTypes(types);
 }
 
 template <typename... Args>
 World::EntityList World::query(const std::string& name, Args&&... args)
 {
-    EntityList entities;
-    for (auto id: core.entities.getIndex())
-    {
-        Entity ent {core, id};
-        if (ent.has(name, args...))
-            entities.push_back(ent);
-    }
-    return entities;
+    // Get all type indexes from component names
+    auto types = getTypeIndexesString(name, args...);
+
+    // Return list of entities with these component types
+    return queryTypes(types);
 }
 
 template <typename T>

@@ -121,6 +121,9 @@ class Entity
         // Returns true if the entity has this component name
         bool has(const std::string& name) const;
 
+        // Returns true if the entity has these components from a type index list
+        bool has(const std::vector<TypeIndex>& types) const;
+
         // Returns true if the entity has all of the specified component names
         template <typename... Args>
         bool has(const std::string& name, const std::string& name2, Args&&... args) const;

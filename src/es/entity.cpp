@@ -97,6 +97,16 @@ bool Entity::has(const std::string& name) const
     return (getCompId(name) != invalidId);
 }
 
+bool Entity::has(const std::vector<TypeIndex>& types) const
+{
+    for (auto& typeIdx: types)
+    {
+        if (getCompId(typeIdx.id) == invalidId)
+            return false;
+    }
+    return true;
+}
+
 size_t Entity::total() const
 {
     if (valid())

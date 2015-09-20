@@ -149,6 +149,12 @@ class PackedArray
         auto cbegin() const { return elements.cbegin(); }
         auto cend() const { return elements.cend(); }
 
+        // Returns an element directly (for polymorphic iteration)
+        T& getElement(size_t i)
+        {
+            return elements[i];
+        }
+
         // Returns all of the currently used IDs
         std::vector<ID> getIndex() const
         {

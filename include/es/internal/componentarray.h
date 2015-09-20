@@ -31,6 +31,7 @@ class BaseComponentArray
         virtual void erase(ID id) = 0;
         virtual void clear() = 0;
         virtual size_t size() const = 0;
+        virtual Component& getElement(size_t i) = 0;
 };
 
 // A wrapper around a PackedArray designed for storing components
@@ -120,6 +121,11 @@ class ComponentArray: public BaseComponentArray
         auto cend() const
         {
             return array.cend();
+        }
+
+        T& getElement(size_t i)
+        {
+            return array.getElement(i);
         }
 
     private:

@@ -17,7 +17,10 @@ namespace es
 // A default-constructible type_index
 struct TypeIndex
 {
-    std::type_index id {typeid(void)};
+    TypeIndex(): id{typeid(void)} {}
+    TypeIndex(const std::type_index& id): id{id} {}
+
+    std::type_index id;
 };
 
 /*

@@ -674,15 +674,26 @@ void worldBenchmarks()
     es::loadPrototypes("entities.cfg");
     es::World world;
 
-    // Create some empty entities
+    // Create some entities with random components
+    srand(time(nullptr));
     auto start = std::chrono::system_clock::now();
     std::cout << "Creating random entities...\n";
+    for (size_t i = 0; i < 100000; ++i)
+    {
+        auto ent = world.create();
+        ent.assign<Size>(600, 400);
+        if (rand() % 10 == 0)
+        {
+            ent.assign<Position>(50, 50);
+            ent.assign<Velocity>(80, 80);
+        }
+    }
     for (size_t i = 0; i < 1000000; ++i)
     {
         auto ent = world.create();
-        if (rand() % 3)
+        if (rand() % 3 == 0)
             ent.assign<Position>(rand() % 30, rand() % 50);
-        else if (rand() % 3)
+        else if (rand() % 3 == 0)
             ent.assign<Sprite>("Some string");
         else
         {
@@ -694,14 +705,16 @@ void worldBenchmarks()
 
     start = std::chrono::system_clock::now();
     std::cout << "Querying...\n";
-    auto result = world.query<Position, Velocity>();
+    auto result = world.query<Position, Velocity, Size>();
     double et = getElapsedTime(start);
     std::cout << "Done in " << et << " seconds.\n\n";
 
     start = std::chrono::system_clock::now();
     std::cout << "Iterating through query results...\n";
+    std::cout << '\t' << result.size() << " elements\n";
     for (auto ent: result)
     {
+        ent.get<Size>();
         ent.get<Position>();
         ent.get<Velocity>();
     }
@@ -710,15 +723,35 @@ void worldBenchmarks()
 
 
     start = std::chrono::system_clock::now();
-    std::cout << "Directly iterating...\n";
-
-    for (auto& pos: world.getComponents<Position>())
-        world.from(pos).get<Velocity>();
-
+    std::cout << "Directly iterating (smart)...\n";
+    std::cout << '\t' << world.getComponents<Size>().size() << " elements\n";
+    for (auto& size: world.getComponents<Size>())
+    {
+        auto ent = world.from(size);
+        auto vel = ent.get<Velocity>();
+        auto pos = ent.get<Position>();
+        if (vel && pos) {}
+    }
     double et3 = getElapsedTime(start);
     std::cout << "Done in " << et3 << " seconds.\n";
     double speedup = (et + et2) / et3;
-    std::cout << "NOTE: Direct iteration provides a " << speedup << "x speedup.\n\n";
+    std::cout << "NOTE: Smart direct iteration is " << speedup << "x the speed of query().\n\n";
+
+
+    start = std::chrono::system_clock::now();
+    std::cout << "Directly iterating (dumb)...\n";
+    std::cout << '\t' << world.getComponents<Position>().size() << " elements\n";
+    for (auto& pos: world.getComponents<Position>())
+    {
+        auto ent = world.from(pos);
+        auto vel = ent.get<Velocity>();
+        auto size = ent.get<Size>();
+        if (vel && size) {}
+    }
+    et3 = getElapsedTime(start);
+    std::cout << "Done in " << et3 << " seconds.\n";
+    speedup = (et + et2) / et3;
+    std::cout << "NOTE: Dumb direct iteration is " << speedup << "x the speed of query().\n\n";
 
 
     start = std::chrono::system_clock::now();
