@@ -4,8 +4,8 @@ project(ES)
 aux_source_directory(src/es ES_SOURCE)
 aux_source_directory(tests ES_TESTS)
 
-add_subdirectory(lib/ConfigFile)
-include_directories(include lib/ConfigFile)
+add_subdirectory(lib/config-file)
+include_directories(include lib/config-file)
 
 add_definitions("-Wpedantic -Wall -std=c++14 -O3")
 add_library(es SHARED ${ES_SOURCE})

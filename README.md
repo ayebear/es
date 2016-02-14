@@ -105,7 +105,7 @@ target_link_libraries(your_project LINK_PUBLIC es)
 target_link_libraries(your_project LINK_PUBLIC es_s)
 ```
 
-If you aren't using CMake, you will need to download and build [ConfigFile](https://github.com/ayebear/ConfigFile) as well, which will need to be included and linked to your project.
+If you aren't using CMake, you will need to download and build [config-file](https://github.com/ayebear/config-file) as well, which will need to be included and linked to your project.
 
 
 ## Example Usage
@@ -540,7 +540,7 @@ This will clear all of the events of type "MyEvent". Here are some tips on where
 
 ### Prototypes
 
-Prototypes can be defined in the [ConfigFile](https://github.com/ayebear/ConfigFile) format, and loaded from various sources such as a file, string, or a network.
+Prototypes can be defined in the [config-file](https://github.com/ayebear/config-file) format, and loaded from various sources such as a file, string, or a network.
 
 * Component names must be properly defined/bound first.
 * Prototypes and their names are static, so they don't need to be reloaded across worlds.

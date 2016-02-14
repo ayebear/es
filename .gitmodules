@@ -1,4 +1,4 @@
-[submodule "lib/ConfigFile"]
-	path = lib/ConfigFile
-	url = https://github.com/ayebear/ConfigFile.git
+[submodule "lib/config-file"]
+	path = lib/config-file
+	url = https://github.com/ayebear/config-file.git
 	branch = master
