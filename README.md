@@ -32,8 +32,6 @@ This library was inspired by the following amazing libraries:
 
 ## Important Features
 
-No other entity system currently has **all** of these features:
-
 * Can use components with their string names
   * Accessing/updating/removing/checking components by name is supported
   * Allows for loading from files
